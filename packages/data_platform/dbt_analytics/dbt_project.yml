@@ -1,0 +1,36 @@
+# =============================================================================
+# dbt Project Configuration
+# Enterprise AI Analytics Platform — Phase 2: Analytics Engineering
+# =============================================================================
+name: enterprise_ai_analytics_platform
+version: "1.0.0"
+config-version: 2
+
+profile: enterprise_ai_analytics_platform
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  enterprise_ai_analytics_platform:
+    # Staging layer — lightweight views over raw sources
+    staging:
+      +materialized: view
+
+    # Intermediate layer — reusable business transformations
+    intermediate:
+      +materialized: view
+
+    # Marts — Kimball dimensional models
+    marts:
+      core:
+        +materialized: table
+      finance:
+        +materialized: table

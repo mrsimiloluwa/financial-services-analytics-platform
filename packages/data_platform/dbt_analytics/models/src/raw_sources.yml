@@ -1,0 +1,671 @@
+version: 2
+
+sources:
+  - name: raw
+    description: >
+      Governed PostgreSQL raw banking schema populated by the synthetic financial
+      data generator and idempotent staging-to-raw ingestion pipeline (Phase 1 / M1.5).
+      All monetary columns use exact NUMERIC(18, 4) precision and FX rates use NUMERIC(18, 6).
+    database: "{{ env_var('POSTGRES_DB', 'analytics_platform') }}"
+    schema: raw
+    loaded_at_field: created_at
+    freshness:
+      warn_after: {count: 30, period: day}
+      error_after: {count: 90, period: day}
+
+    tables:
+      # 1. Chart of Accounts Master
+      - name: gl_accounts
+        description: "Internal bank General Ledger (GL) Chart of Accounts master table."
+        columns:
+          - name: gl_account_id
+            description: "Primary identifier for the GL account (e.g., GL_LIAB_CUSTOMER_DEPOSITS)."
+            tests:
+              - unique
+              - not_null
+          - name: gl_account_number
+            description: "Unique numeric code in the bank chart of accounts."
+            tests:
+              - unique
+              - not_null
+          - name: account_name
+            description: "Descriptive title of the GL account."
+            tests:
+              - not_null
+          - name: account_category
+            description: "Accounting classification: ASSET, LIABILITY, EQUITY, REVENUE, or EXPENSE."
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ["ASSET", "LIABILITY", "EQUITY", "REVENUE", "EXPENSE"]
+          - name: normal_balance
+            description: "Standard accounting normal balance side (DEBIT or CREDIT)."
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ["DEBIT", "CREDIT"]
+          - name: currency
+            description: "ISO 4217 3-letter currency code of the GL account."
+            tests:
+              - not_null
+          - name: description
+            description: "Detailed accounting purpose and posting policy for the GL account."
+            tests:
+              - not_null
+          - name: created_at
+            description: "Record ingestion timestamp in UTC."
+            tests:
+              - not_null
+
+      # 2. Customers Profile Master
+      - name: customers
+        description: "Master customer profile and segmentation records."
+        columns:
+          - name: customer_id
+            description: "Primary identifier for the banking customer (e.g., CUST_0001)."
+            tests:
+              - unique
+              - not_null
+          - name: legal_entity_id
+            description: "External corporate or legal entity identifier."
+            tests:
+              - not_null
+          - name: customer_name
+            description: "Registered synthetic legal name of the customer."
+            tests:
+              - not_null
+          - name: customer_segment
+            description: "Commercial segmentation tier driving contractual pricing rules."
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ["RETAIL_WEALTH", "COMMERCIAL_SME", "INSTITUTIONAL"]
+          - name: status
+            description: "Lifecycle status of the customer relationship."
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ["ACTIVE", "SUSPENDED", "CLOSED"]
+          - name: onboarding_date
+            description: "Date when the customer relationship was established."
+            tests:
+              - not_null
+          - name: created_at
+            description: "Record ingestion timestamp in UTC."
+            tests:
+              - not_null
+
+      # 3. Customer Bank Accounts Subledger
+      - name: accounts
+        description: "Customer subledger deposit, settlement, and sweep accounts."
+        columns:
+          - name: account_id
+            description: "Primary identifier for the customer bank account (e.g., ACC_0001)."
+            tests:
+              - unique
+              - not_null
+          - name: customer_id
+            description: "Foreign key to raw.customers.customer_id."
+            tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('raw', 'customers')
+                    field: customer_id
+          - name: account_number
+            description: "Unique IBAN/account number string."
+            tests:
+              - unique
+              - not_null
+          - name: account_type
+            description: "Product classification of the bank account."
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ["OPERATING_CHECKING", "TREASURY_SWEEP", "MERCHANT_SETTLEMENT"]
+          - name: currency
+            description: "Account denomination currency (ISO 4217: EUR, USD, GBP, CHF)."
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ["EUR", "USD", "GBP", "CHF"]
+          - name: opening_balance
+            description: "Initial account balance at simulation start in account currency (NUMERIC(18,4))."
+            tests:
+              - not_null
+          - name: reserved_funds
+            description: "Hold/reserved funds amount in account currency (NUMERIC(18,4))."
+            tests:
+              - not_null
+          - name: status
+            description: "Operational account status."
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ["ACTIVE", "FROZEN", "CLOSED"]
+          - name: opened_at
+            description: "Timestamp when the account was opened."
+            tests:
+              - not_null
+          - name: created_at
+            description: "Record ingestion timestamp in UTC."
+            tests:
+              - not_null
+
+      # 4. Overdraft Facility Agreements
+      - name: overdraft_facilities
+        description: "Contractual credit and overdraft facility agreements linked to customer accounts."
+        columns:
+          - name: facility_id
+            description: "Primary identifier for the overdraft facility agreement."
+            tests:
+              - unique
+              - not_null
+          - name: account_id
+            description: "Foreign key to raw.accounts.account_id."
+            tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('raw', 'accounts')
+                    field: account_id
+          - name: authorized_limit
+            description: "Approved overdraft limit in the linked account currency (NUMERIC(18,4))."
+            tests:
+              - not_null
+          - name: standard_interest_rate
+            description: "Annualized contractual interest rate for authorized overdraft usage (NUMERIC(7,4))."
+            tests:
+              - not_null
+          - name: unauthorized_penalty_rate
+            description: "Annualized penalty interest rate for exceeding authorized limit (NUMERIC(7,4))."
+            tests:
+              - not_null
+          - name: effective_start_date
+            description: "Facility agreement effective start date."
+            tests:
+              - not_null
+          - name: effective_end_date
+            description: "Facility agreement expiration date."
+            tests:
+              - not_null
+          - name: created_at
+            description: "Record ingestion timestamp in UTC."
+            tests:
+              - not_null
+
+      # 5. Foreign Exchange Market Rates
+      - name: fx_rates
+        description: "Historical daily foreign exchange mid, bid, and ask rates across EUR, USD, GBP, and CHF."
+        columns:
+          - name: rate_id
+            description: "Primary identifier for the daily currency pair rate record."
+            tests:
+              - unique
+              - not_null
+          - name: rate_date
+            description: "Effective market calendar date for the exchange rate."
+            tests:
+              - not_null
+          - name: from_currency
+            description: "Source ISO 4217 currency code."
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ["EUR", "USD", "GBP", "CHF"]
+          - name: to_currency
+            description: "Target ISO 4217 currency code."
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ["EUR", "USD", "GBP", "CHF"]
+          - name: mid_rate
+            description: "Interbank middle exchange rate (1 unit of from_currency = mid_rate units of to_currency, NUMERIC(18,6))."
+            tests:
+              - not_null
+          - name: bid_rate
+            description: "Bank buying rate (bid_rate <= mid_rate, NUMERIC(18,6))."
+            tests:
+              - not_null
+          - name: ask_rate
+            description: "Bank selling rate (ask_rate >= mid_rate, NUMERIC(18,6))."
+            tests:
+              - not_null
+          - name: rate_source
+            description: "Market rate feed provider identifier (e.g., ECB_SYNTH)."
+            tests:
+              - not_null
+          - name: rate_type
+            description: "Rate type classification (SPOT or HISTORICAL_EOD)."
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ["SPOT", "HISTORICAL_EOD"]
+          - name: rate_timestamp
+            description: "Timestamp when the FX quote was fixed."
+            tests:
+              - not_null
+          - name: created_at
+            description: "Record ingestion timestamp in UTC."
+            tests:
+              - not_null
+
+      # 6. Commercial Transactions
+      - name: transactions
+        description: "Commercial payment, settlement, and FX conversion transactions initiated on customer accounts."
+        columns:
+          - name: transaction_id
+            description: "Primary identifier for the commercial transaction (e.g., TXN_00000001)."
+            tests:
+              - unique
+              - not_null
+          - name: account_id
+            description: "Originating customer account identifier (FK to raw.accounts)."
+            tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('raw', 'accounts')
+                    field: account_id
+          - name: counterparty_account_id
+            description: "Counterparty account or external beneficiary identifier."
+          - name: transaction_type
+            description: "Payment rail or financial transaction product type."
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ["WIRE_TRANSFER", "ACH_PAYMENT", "CARD_SETTLEMENT", "FX_CONVERSION", "INTEREST_POSTING"]
+          - name: channel
+            description: "Initiation channel (ONLINE_BANKING, API_GATEWAY, SWIFT, SEPA_CORE)."
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ["ONLINE_BANKING", "API_GATEWAY", "SWIFT", "SEPA_CORE"]
+          - name: direction
+            description: "Movement direction relative to the customer account (DEBIT or CREDIT)."
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ["DEBIT", "CREDIT"]
+          - name: transaction_amount
+            description: "Principal transaction amount in transaction_currency (NUMERIC(18,4))."
+            tests:
+              - not_null
+          - name: transaction_currency
+            description: "Original currency in which the transaction was initiated."
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ["EUR", "USD", "GBP", "CHF"]
+          - name: settlement_currency
+            description: "Currency in which the transaction settled."
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ["EUR", "USD", "GBP", "CHF"]
+          - name: customer_fx_rate
+            description: "Applied customer FX rate between transaction_currency and settlement_currency (NUMERIC(18,6))."
+            tests:
+              - not_null
+          - name: base_currency_amount
+            description: "Transaction amount converted to settlement/base currency at execution time (NUMERIC(18,4))."
+            tests:
+              - not_null
+          - name: status
+            description: "Execution lifecycle status (SETTLED, PENDING, REVERSED, FAILED)."
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ["SETTLED", "PENDING", "REVERSED", "FAILED"]
+          - name: original_transaction_id
+            description: "Reference to original transaction_id if this record is a reversal."
+          - name: journal_id
+            description: "Primary settlement accounting journal reference (NULL for PENDING or FAILED transactions)."
+          - name: initiated_at
+            description: "Timestamp when the transaction was initiated."
+            tests:
+              - not_null
+          - name: settled_at
+            description: "Timestamp when the transaction settled (NULL if PENDING or FAILED)."
+          - name: created_at
+            description: "Record ingestion timestamp in UTC."
+            tests:
+              - not_null
+
+      # 7. Accounting Journals
+      - name: journals
+        description: "Balanced double-entry accounting journal headers."
+        columns:
+          - name: journal_id
+            description: "Primary identifier for the accounting journal event (e.g., JRN_00000001)."
+            tests:
+              - unique
+              - not_null
+          - name: transaction_id
+            description: "Associated commercial transaction identifier."
+          - name: journal_type
+            description: "Accounting event classification."
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values:
+                      - "WIRE_SETTLEMENT"
+                      - "ACH_SETTLEMENT"
+                      - "CARD_SETTLEMENT"
+                      - "FX_CONVERSION"
+                      - "REVERSAL"
+                      - "FEE_SETTLEMENT"
+                      - "INTEREST_POSTING"
+          - name: description
+            description: "Audit narrative explaining the accounting journal."
+            tests:
+              - not_null
+          - name: created_at
+            description: "Timestamp when the journal was posted."
+            tests:
+              - not_null
+
+      # 8. Double-Entry General Ledger Postings
+      - name: ledger_entries
+        description: "Immutable double-entry General Ledger postings linked to journals and GL accounts."
+        columns:
+          - name: entry_id
+            description: "Primary identifier for the individual debit or credit ledger line (e.g., LE_00000001)."
+            tests:
+              - unique
+              - not_null
+          - name: journal_id
+            description: "Foreign key to raw.journals.journal_id."
+            tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('raw', 'journals')
+                    field: journal_id
+          - name: transaction_id
+            description: "Optional reference to raw.transactions.transaction_id."
+          - name: account_id
+            description: "Customer subledger account_id or internal GL account identifier."
+            tests:
+              - not_null
+          - name: account_type_marker
+            description: "Distinguishes customer subledger postings (CUSTOMER) from internal bank GL legs (GL_INTERNAL)."
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ["CUSTOMER", "GL_INTERNAL"]
+          - name: gl_account_id
+            description: "Foreign key to raw.gl_accounts.gl_account_id."
+            tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('raw', 'gl_accounts')
+                    field: gl_account_id
+          - name: entry_type
+            description: "Accounting leg direction (DEBIT or CREDIT)."
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ["DEBIT", "CREDIT"]
+          - name: amount
+            description: "Positive monetary posting amount in the entry currency (NUMERIC(18,4))."
+            tests:
+              - not_null
+          - name: currency
+            description: "ISO 4217 currency of the ledger leg."
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ["EUR", "USD", "GBP", "CHF"]
+          - name: original_entry_id
+            description: "Reference to the original ledger entry_id when this entry is an offsetting reversal."
+          - name: posting_status
+            description: "Posting lifecycle state (POSTED, REVERSED, PARTIALLY_REVERSED)."
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ["POSTED", "REVERSED", "PARTIALLY_REVERSED"]
+          - name: posted_at
+            description: "Timestamp when the ledger entry was recorded."
+            tests:
+              - not_null
+          - name: created_at
+            description: "Record ingestion timestamp in UTC."
+            tests:
+              - not_null
+
+      # 9. Fee Assessments
+      - name: fee_assessments
+        description: "Contractual transaction fee evaluations decomposing gross fees, waivers, and net collectible amounts."
+        columns:
+          - name: assessment_id
+            description: "Primary identifier for the fee assessment (e.g., FA_00000001)."
+            tests:
+              - unique
+              - not_null
+          - name: transaction_id
+            description: "Foreign key to raw.transactions.transaction_id."
+            tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('raw', 'transactions')
+                    field: transaction_id
+          - name: account_id
+            description: "Foreign key to raw.accounts.account_id."
+            tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('raw', 'accounts')
+                    field: account_id
+          - name: gross_assessed_amount
+            description: "Total fee calculated from the pricing schedule before waivers (NUMERIC(18,4))."
+            tests:
+              - not_null
+          - name: waived_amount
+            description: "Portion of gross assessed fee waived under relationship or tier discounts (NUMERIC(18,4))."
+            tests:
+              - not_null
+          - name: waiver_reason
+            description: "Business justification for any fee waiver."
+          - name: net_collectible_amount
+            description: "Net fee due from the customer after subtracting waived_amount from gross_assessed_amount (NUMERIC(18,4))."
+            tests:
+              - not_null
+          - name: assessment_status
+            description: "Assessment status (ASSESSED, PARTIALLY_WAIVED, WAIVED_IN_FULL)."
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ["ASSESSED", "PARTIALLY_WAIVED", "WAIVED_IN_FULL"]
+          - name: assessed_at
+            description: "Timestamp when the fee was assessed."
+            tests:
+              - not_null
+          - name: created_at
+            description: "Record ingestion timestamp in UTC."
+            tests:
+              - not_null
+
+      # 10. Fee Collection Attempts
+      - name: fee_collections
+        description: "Execution attempts to collect net collectible fees from customer accounts."
+        columns:
+          - name: collection_id
+            description: "Primary identifier for the fee collection attempt (e.g., FC_00000001)."
+            tests:
+              - unique
+              - not_null
+          - name: assessment_id
+            description: "Foreign key to raw.fee_assessments.assessment_id."
+            tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('raw', 'fee_assessments')
+                    field: assessment_id
+          - name: account_id
+            description: "Foreign key to raw.accounts.account_id."
+            tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('raw', 'accounts')
+                    field: account_id
+          - name: collection_attempt_number
+            description: "Sequential attempt counter for collecting the assessed fee."
+            tests:
+              - not_null
+          - name: target_amount
+            description: "Collectible balance targeted by this collection attempt (NUMERIC(18,4))."
+            tests:
+              - not_null
+          - name: collected_amount
+            description: "Amount actually collected during this attempt (NUMERIC(18,4))."
+            tests:
+              - not_null
+          - name: outstanding_amount
+            description: "Uncollected remainder after this attempt (target_amount - collected_amount, NUMERIC(18,4))."
+            tests:
+              - not_null
+          - name: collection_status
+            description: "Outcome of the collection sweep (SETTLED, PARTIAL, FAILED, REVERSED)."
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ["SETTLED", "PARTIAL", "FAILED", "REVERSED"]
+          - name: failure_reason
+            description: "Reason code when collection_status is FAILED (e.g., INSUFFICIENT_FUNDS, ACCOUNT_FROZEN)."
+          - name: attempted_at
+            description: "Timestamp when the collection sweep was attempted."
+            tests:
+              - not_null
+          - name: settled_at
+            description: "Timestamp when the collection settled (NULL if FAILED)."
+          - name: linked_ledger_entry_id
+            description: "Reference to the customer debit ledger entry (NULL if FAILED)."
+          - name: created_at
+            description: "Record ingestion timestamp in UTC."
+            tests:
+              - not_null
+
+      # 11. Accounting Revenue Recognitions
+      - name: revenue_recognitions
+        description: "Collection-based accounting revenue recognition records linking settled fee collections to net revenue."
+        columns:
+          - name: recognition_id
+            description: "Primary identifier for the revenue recognition record (e.g., RR_00000001)."
+            tests:
+              - unique
+              - not_null
+          - name: collection_id
+            description: "Foreign key to raw.fee_collections.collection_id."
+            tests:
+              - unique
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('raw', 'fee_collections')
+                    field: collection_id
+          - name: gross_collected_revenue
+            description: "Gross revenue recognized from settled fee collection (NUMERIC(18,4))."
+            tests:
+              - not_null
+          - name: reversed_revenue_amount
+            description: "Portion of collected revenue subsequently reversed or refunded (NUMERIC(18,4))."
+            tests:
+              - not_null
+          - name: pass_through_cost
+            description: "Direct network/interchange pass-through cost deducted from gross collected revenue (NUMERIC(18,4))."
+            tests:
+              - not_null
+          - name: net_recognized_revenue
+            description: "Net recognized fee revenue (gross_collected_revenue - reversed_revenue_amount - pass_through_cost, NUMERIC(18,4))."
+            tests:
+              - not_null
+          - name: recognized_at
+            description: "Timestamp when revenue was recognized."
+            tests:
+              - not_null
+          - name: created_at
+            description: "Record ingestion timestamp in UTC."
+            tests:
+              - not_null
+
+      # 12. Ingestion Batch Manifests
+      - name: ingestion_batch_manifests
+        description: "Operational audit and lineage log recording synthetic dataset generation and ingestion runs."
+        columns:
+          - name: batch_id
+            description: "UUID primary key identifying the ingestion batch."
+            tests:
+              - unique
+              - not_null
+          - name: generator_version
+            description: "Semantic version of the synthetic data generator."
+            tests:
+              - not_null
+          - name: random_seed
+            description: "Deterministic PRNG seed used to generate the dataset."
+            tests:
+              - not_null
+          - name: profile_name
+            description: "Simulation scale profile (e.g., DEV, TEST, PROD)."
+            tests:
+              - not_null
+          - name: reporting_base_currency
+            description: "Configured platform reporting base currency (EUR)."
+            tests:
+              - not_null
+          - name: total_records
+            description: "Total entity records loaded across all tables in the batch."
+            tests:
+              - not_null
+          - name: entity_counts
+            description: "JSONB dictionary mapping table names to record counts."
+            tests:
+              - not_null
+          - name: started_at
+            description: "Batch execution start timestamp."
+            tests:
+              - not_null
+          - name: completed_at
+            description: "Batch execution completion timestamp."
+            tests:
+              - not_null
+          - name: status
+            description: "Batch execution outcome (STARTED, COMPLETED, FAILED)."
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ["STARTED", "COMPLETED", "FAILED"]
+          - name: created_at
+            description: "Record ingestion timestamp in UTC."
+            tests:
+              - not_null
