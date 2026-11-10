@@ -1,0 +1,69 @@
+site_name: Enterprise AI Analytics Platform
+site_description: Production-grade Financial Analytics and AI Platform Documentation
+site_author: Lead Data & AI Architect
+repo_url: https://github.com/mrsimiloluwa/test
+repo_name: mrsimiloluwa/test
+
+theme:
+  name: material
+  language: en
+  palette:
+    # Light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: light-blue
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - content.code.copy
+    - content.code.annotate
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - tables
+  - attr_list
+
+nav:
+  - Overview: index.md
+  - Architecture:
+      - System Design: architecture/overview.md
+      - Ingestion Pipeline: architecture/ingestion-pipeline.md
+      - "ADR 001: Foundations & Architecture": architecture/adr-001-monorepo-foundations.md
+  - Phases & Changelog:
+      - "Phase 0: Foundations & Standards": phases/phase-0-foundations.md
+      - "Phase 1: Financial Data & Accounting Engine": phases/phase-1-generation.md
+      - "Milestone 1.5: PostgreSQL Ingestion": phases/phase-1-ingestion.md
+  - Runbooks:
+      - Local Setup & Operations: runbooks/setup.md
