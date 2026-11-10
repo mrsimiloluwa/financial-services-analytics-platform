@@ -4,11 +4,17 @@ from shared.config import Settings
 
 
 def test_default_settings() -> None:
-    """Verify default development configuration settings."""
+    """Verify default development configuration settings and schema field defaults."""
+    # Verify underlying field defaults
+    assert Settings.model_fields["postgres_db"].default == "analytics_platform"
+    assert Settings.model_fields["postgres_port"].default == 5432
+    assert Settings.model_fields["app_env"].default == "development"
+
+    # Verify active runtime settings (permitting CI testing overrides)
     settings = Settings()
     assert settings.app_env in {"development", "testing"}
     assert settings.postgres_port == 5432
-    assert settings.postgres_db == "analytics_platform"
+    assert settings.postgres_db in {"analytics_platform", "analytics_platform_test"}
     assert settings.duckdb_database == ":memory:"
 
 
