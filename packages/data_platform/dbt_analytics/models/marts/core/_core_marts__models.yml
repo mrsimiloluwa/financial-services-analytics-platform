@@ -1,0 +1,207 @@
+version: 2
+
+models:
+  - name: dim_customers
+    description: >
+      Core Kimball customer dimension table containing master profile, segmentation,
+      account holdings, and transaction activity summary. Grain: one row per customer_id.
+    columns:
+      - name: customer_id
+        description: "Primary key for customer."
+        tests:
+          - unique
+          - not_null
+      - name: legal_entity_id
+        description: "Legal entity reference."
+        tests:
+          - not_null
+      - name: customer_name
+        description: "Customer legal name."
+        tests:
+          - not_null
+      - name: customer_segment
+        description: "Commercial segmentation tier."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["RETAIL_WEALTH", "COMMERCIAL_SME", "INSTITUTIONAL"]
+      - name: customer_status
+        description: "Customer relationship status."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["ACTIVE", "SUSPENDED", "CLOSED"]
+      - name: onboarding_date
+        description: "Date customer onboarded."
+        tests:
+          - not_null
+
+  - name: dim_accounts
+    description: >
+      Core Kimball bank account dimension table with customer linkage, opening/available
+      balances, overdraft facility limits, and subledger closing balance in native currency.
+      Grain: one row per account_id.
+    columns:
+      - name: account_id
+        description: "Primary key for bank account."
+        tests:
+          - unique
+          - not_null
+      - name: account_number
+        description: "Unique IBAN/account number."
+        tests:
+          - unique
+          - not_null
+      - name: customer_id
+        description: "Foreign key to dim_customers.customer_id."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customers')
+                field: customer_id
+      - name: account_type
+        description: "Bank account product classification."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["OPERATING_CHECKING", "TREASURY_SWEEP", "MERCHANT_SETTLEMENT"]
+      - name: account_currency
+        description: "Account ISO 4217 denomination currency."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["EUR", "USD", "GBP", "CHF"]
+      - name: closing_ledger_balance
+        description: "Opening balance plus net posted customer subledger movements in account_currency."
+        tests:
+          - not_null
+
+  - name: dim_gl_accounts
+    description: >
+      Core Kimball General Ledger Chart of Accounts dimension table.
+      Grain: one row per gl_account_id.
+    columns:
+      - name: gl_account_id
+        description: "Primary key for GL account."
+        tests:
+          - unique
+          - not_null
+      - name: gl_account_number
+        description: "Unique GL account code."
+        tests:
+          - unique
+          - not_null
+      - name: account_category
+        description: "ASSET, LIABILITY, EQUITY, REVENUE, or EXPENSE."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["ASSET", "LIABILITY", "EQUITY", "REVENUE", "EXPENSE"]
+      - name: normal_balance
+        description: "DEBIT or CREDIT."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["DEBIT", "CREDIT"]
+
+  - name: dim_date
+    description: >
+      Core Kimball calendar date dimension table covering all simulation dates.
+      Grain: one row per calendar date (date_day).
+    columns:
+      - name: date_day
+        description: "Primary key calendar date."
+        tests:
+          - unique
+          - not_null
+      - name: calendar_year
+        description: "4-digit calendar year."
+        tests:
+          - not_null
+      - name: calendar_quarter
+        description: "Calendar quarter (1-4)."
+        tests:
+          - not_null
+      - name: calendar_month
+        description: "Calendar month (1-12)."
+        tests:
+          - not_null
+      - name: year_month
+        description: "YYYY-MM string."
+        tests:
+          - not_null
+
+  - name: fct_transactions
+    description: >
+      Core Kimball commercial transaction fact table preserving native transaction
+      currencies and explicit EUR reporting conversion. Grain: one row per transaction_id.
+    columns:
+      - name: transaction_id
+        description: "Primary key for commercial transaction."
+        tests:
+          - unique
+          - not_null
+      - name: customer_id
+        description: "Foreign key to dim_customers.customer_id."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customers')
+                field: customer_id
+      - name: account_id
+        description: "Foreign key to dim_accounts.account_id."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_accounts')
+                field: account_id
+      - name: transaction_date
+        description: "Foreign key to dim_date.date_day."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+      - name: transaction_type
+        description: "Payment rail / transaction category."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["WIRE_TRANSFER", "ACH_PAYMENT", "CARD_SETTLEMENT", "FX_CONVERSION", "INTEREST_POSTING"]
+      - name: transaction_status
+        description: "SETTLED, PENDING, REVERSED, or FAILED."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["SETTLED", "PENDING", "REVERSED", "FAILED"]
+      - name: transaction_currency
+        description: "Original transaction currency."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["EUR", "USD", "GBP", "CHF"]
+      - name: transaction_amount
+        description: "Principal amount in transaction_currency."
+        tests:
+          - not_null
+      - name: reporting_eur_fx_rate
+        description: "Daily ECB mid-rate converting transaction_currency to EUR."
+        tests:
+          - not_null
+      - name: transaction_amount_eur
+        description: "Principal amount converted to EUR reporting currency."
+        tests:
+          - not_null

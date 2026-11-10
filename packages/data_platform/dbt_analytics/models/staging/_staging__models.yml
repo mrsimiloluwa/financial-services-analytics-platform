@@ -1,0 +1,463 @@
+version: 2
+
+models:
+  - name: stg_gl_accounts
+    description: "Staging view of General Ledger Chart of Accounts. Grain: one row per gl_account_id."
+    columns:
+      - name: gl_account_id
+        description: "Primary key for GL account."
+        tests:
+          - unique
+          - not_null
+      - name: gl_account_number
+        description: "Unique GL account code."
+        tests:
+          - unique
+          - not_null
+      - name: account_name
+        description: "GL account title."
+        tests:
+          - not_null
+      - name: account_category
+        description: "ASSET, LIABILITY, EQUITY, REVENUE, or EXPENSE."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["ASSET", "LIABILITY", "EQUITY", "REVENUE", "EXPENSE"]
+      - name: normal_balance
+        description: "Normal balance direction (DEBIT or CREDIT)."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["DEBIT", "CREDIT"]
+      - name: currency
+        description: "ISO 4217 currency code."
+        tests:
+          - not_null
+
+  - name: stg_customers
+    description: "Staging view of banking customers. Grain: one row per customer_id."
+    columns:
+      - name: customer_id
+        description: "Primary key for customer."
+        tests:
+          - unique
+          - not_null
+      - name: legal_entity_id
+        description: "External legal entity identifier."
+        tests:
+          - not_null
+      - name: customer_name
+        description: "Customer registered name."
+        tests:
+          - not_null
+      - name: customer_segment
+        description: "Customer commercial tier (RETAIL_WEALTH, COMMERCIAL_SME, INSTITUTIONAL)."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["RETAIL_WEALTH", "COMMERCIAL_SME", "INSTITUTIONAL"]
+      - name: customer_status
+        description: "Customer status (ACTIVE, SUSPENDED, CLOSED)."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["ACTIVE", "SUSPENDED", "CLOSED"]
+      - name: onboarding_date
+        description: "Customer onboarding date."
+        tests:
+          - not_null
+
+  - name: stg_accounts
+    description: "Staging view of customer bank accounts. Grain: one row per account_id."
+    columns:
+      - name: account_id
+        description: "Primary key for customer bank account."
+        tests:
+          - unique
+          - not_null
+      - name: customer_id
+        description: "Foreign key to stg_customers.customer_id."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_customers')
+                field: customer_id
+      - name: account_number
+        description: "Unique IBAN/account number."
+        tests:
+          - unique
+          - not_null
+      - name: account_type
+        description: "Product type (OPERATING_CHECKING, TREASURY_SWEEP, MERCHANT_SETTLEMENT)."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["OPERATING_CHECKING", "TREASURY_SWEEP", "MERCHANT_SETTLEMENT"]
+      - name: account_currency
+        description: "Account ISO 4217 currency code."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["EUR", "USD", "GBP", "CHF"]
+      - name: opening_balance
+        description: "Initial account balance in account_currency."
+        tests:
+          - not_null
+      - name: reserved_funds
+        description: "Reserved funds in account_currency."
+        tests:
+          - not_null
+      - name: initial_available_balance
+        description: "Opening balance minus reserved funds in account_currency."
+        tests:
+          - not_null
+      - name: account_status
+        description: "Account operational status."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["ACTIVE", "FROZEN", "CLOSED"]
+
+  - name: stg_overdraft_facilities
+    description: "Staging view of overdraft credit facilities. Grain: one row per facility_id."
+    columns:
+      - name: facility_id
+        description: "Primary key for overdraft facility."
+        tests:
+          - unique
+          - not_null
+      - name: account_id
+        description: "Foreign key to stg_accounts.account_id."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_accounts')
+                field: account_id
+      - name: authorized_limit
+        description: "Authorized overdraft limit in account currency."
+        tests:
+          - not_null
+
+  - name: stg_fx_rates
+    description: "Staging view of daily FX rates. Grain: one row per rate_id (unique per rate_date + from_currency + to_currency)."
+    columns:
+      - name: rate_id
+        description: "Primary key for FX rate quote."
+        tests:
+          - unique
+          - not_null
+      - name: rate_date
+        description: "Quote date."
+        tests:
+          - not_null
+      - name: from_currency
+        description: "Source currency code."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["EUR", "USD", "GBP", "CHF"]
+      - name: to_currency
+        description: "Target currency code."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["EUR", "USD", "GBP", "CHF"]
+      - name: mid_rate
+        description: "Interbank mid rate."
+        tests:
+          - not_null
+      - name: bid_rate
+        description: "Bank bid rate."
+        tests:
+          - not_null
+      - name: ask_rate
+        description: "Bank ask rate."
+        tests:
+          - not_null
+
+  - name: stg_transactions
+    description: "Staging view of commercial banking transactions. Grain: one row per transaction_id."
+    columns:
+      - name: transaction_id
+        description: "Primary key for commercial transaction."
+        tests:
+          - unique
+          - not_null
+      - name: account_id
+        description: "Foreign key to stg_accounts.account_id."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_accounts')
+                field: account_id
+      - name: transaction_type
+        description: "Transaction product category."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["WIRE_TRANSFER", "ACH_PAYMENT", "CARD_SETTLEMENT", "FX_CONVERSION", "INTEREST_POSTING"]
+      - name: channel
+        description: "Initiation channel."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["ONLINE_BANKING", "API_GATEWAY", "SWIFT", "SEPA_CORE"]
+      - name: direction
+        description: "DEBIT or CREDIT."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["DEBIT", "CREDIT"]
+      - name: transaction_amount
+        description: "Principal amount in transaction_currency."
+        tests:
+          - not_null
+      - name: transaction_currency
+        description: "Initiated ISO 4217 currency."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["EUR", "USD", "GBP", "CHF"]
+      - name: settlement_currency
+        description: "Settlement ISO 4217 currency."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["EUR", "USD", "GBP", "CHF"]
+      - name: transaction_status
+        description: "SETTLED, PENDING, REVERSED, or FAILED."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["SETTLED", "PENDING", "REVERSED", "FAILED"]
+
+  - name: stg_journals
+    description: "Staging view of accounting journals. Grain: one row per journal_id."
+    columns:
+      - name: journal_id
+        description: "Primary key for accounting journal."
+        tests:
+          - unique
+          - not_null
+      - name: journal_type
+        description: "Accounting journal classification."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - "WIRE_SETTLEMENT"
+                  - "ACH_SETTLEMENT"
+                  - "CARD_SETTLEMENT"
+                  - "FX_CONVERSION"
+                  - "REVERSAL"
+                  - "FEE_SETTLEMENT"
+                  - "INTEREST_POSTING"
+
+  - name: stg_ledger_entries
+    description: "Staging view of double-entry GL postings. Grain: one row per entry_id."
+    columns:
+      - name: entry_id
+        description: "Primary key for ledger posting line."
+        tests:
+          - unique
+          - not_null
+      - name: journal_id
+        description: "Foreign key to stg_journals.journal_id."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_journals')
+                field: journal_id
+      - name: gl_account_id
+        description: "Foreign key to stg_gl_accounts.gl_account_id."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_gl_accounts')
+                field: gl_account_id
+      - name: entry_type
+        description: "DEBIT or CREDIT."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["DEBIT", "CREDIT"]
+      - name: amount
+        description: "Positive posting amount in currency."
+        tests:
+          - not_null
+      - name: debit_amount
+        description: "Amount if DEBIT, else 0.0000."
+        tests:
+          - not_null
+      - name: credit_amount
+        description: "Amount if CREDIT, else 0.0000."
+        tests:
+          - not_null
+      - name: currency
+        description: "Posting ISO 4217 currency."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["EUR", "USD", "GBP", "CHF"]
+
+  - name: stg_fee_assessments
+    description: "Staging view of transaction fee assessments. Grain: one row per assessment_id."
+    columns:
+      - name: assessment_id
+        description: "Primary key for fee assessment."
+        tests:
+          - unique
+          - not_null
+      - name: transaction_id
+        description: "Foreign key to stg_transactions.transaction_id."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_transactions')
+                field: transaction_id
+      - name: account_id
+        description: "Foreign key to stg_accounts.account_id."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_accounts')
+                field: account_id
+      - name: gross_assessed_amount
+        description: "Gross assessed fee before waivers."
+        tests:
+          - not_null
+      - name: waived_amount
+        description: "Waived fee amount."
+        tests:
+          - not_null
+      - name: net_collectible_amount
+        description: "Net collectible fee (gross - waived)."
+        tests:
+          - not_null
+      - name: assessment_status
+        description: "ASSESSED, PARTIALLY_WAIVED, or WAIVED_IN_FULL."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["ASSESSED", "PARTIALLY_WAIVED", "WAIVED_IN_FULL"]
+
+  - name: stg_fee_collections
+    description: "Staging view of fee collection attempts. Grain: one row per collection_id."
+    columns:
+      - name: collection_id
+        description: "Primary key for collection attempt."
+        tests:
+          - unique
+          - not_null
+      - name: assessment_id
+        description: "Foreign key to stg_fee_assessments.assessment_id."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_fee_assessments')
+                field: assessment_id
+      - name: account_id
+        description: "Foreign key to stg_accounts.account_id."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_accounts')
+                field: account_id
+      - name: target_amount
+        description: "Target collectible fee amount."
+        tests:
+          - not_null
+      - name: collected_amount
+        description: "Collected fee amount."
+        tests:
+          - not_null
+      - name: outstanding_amount
+        description: "Remaining uncollected fee amount."
+        tests:
+          - not_null
+      - name: collection_status
+        description: "SETTLED, PARTIAL, FAILED, or REVERSED."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["SETTLED", "PARTIAL", "FAILED", "REVERSED"]
+
+  - name: stg_revenue_recognitions
+    description: "Staging view of revenue recognitions. Grain: one row per recognition_id."
+    columns:
+      - name: recognition_id
+        description: "Primary key for revenue recognition entry."
+        tests:
+          - unique
+          - not_null
+      - name: collection_id
+        description: "Foreign key to stg_fee_collections.collection_id."
+        tests:
+          - unique
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_fee_collections')
+                field: collection_id
+      - name: gross_collected_revenue
+        description: "Gross revenue recognized upon fee collection."
+        tests:
+          - not_null
+      - name: reversed_revenue_amount
+        description: "Reversed revenue amount."
+        tests:
+          - not_null
+      - name: pass_through_cost
+        description: "Pass-through network/interchange cost."
+        tests:
+          - not_null
+      - name: net_recognized_revenue
+        description: "Net recognized revenue (gross - reversed - pass_through_cost)."
+        tests:
+          - not_null
+
+  - name: stg_ingestion_batch_manifests
+    description: "Staging view of ingestion batch manifests. Grain: one row per batch_id."
+    columns:
+      - name: batch_id
+        description: "Primary key UUID for ingestion batch."
+        tests:
+          - unique
+          - not_null
+      - name: batch_status
+        description: "STARTED, COMPLETED, or FAILED."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["STARTED", "COMPLETED", "FAILED"]

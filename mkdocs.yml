@@ -61,9 +61,15 @@ nav:
       - System Design: architecture/overview.md
       - Ingestion Pipeline: architecture/ingestion-pipeline.md
       - "ADR 001: Foundations & Architecture": architecture/adr-001-monorepo-foundations.md
+  - Analytics Engineering:
+      - dbt Model Reference: technical/analytics/dbt-model-reference.md
+      - Governed Metric Catalogue: technical/analytics/metric-catalogue.md
+      - Data Lineage & Star Schema: technical/analytics/data-lineage.md
+      - Financial Data Quality & Tests: technical/analytics/data-quality.md
   - Phases & Changelog:
       - "Phase 0: Foundations & Standards": phases/phase-0-foundations.md
       - "Phase 1: Financial Data & Accounting Engine": phases/phase-1-generation.md
       - "Milestone 1.5: PostgreSQL Ingestion": phases/phase-1-ingestion.md
+      - "Phase 2: dbt Analytics Engineering": phases/phase-2-dbt-analytics.md
   - Runbooks:
       - Local Setup & Operations: runbooks/setup.md

@@ -205,6 +205,36 @@ Do not use floating-point arithmetic for authoritative monetary calculations.
 
 Document assumptions whenever the underlying financial definition is ambiguous.
 
+## Synthetic Data Transparency and Reproducibility
+
+The project must make its synthetic data independently inspectable and reproducible.
+
+### 1. Sample Data Exports
+- Maintain a `sample_data/` directory containing representative CSV exports of the raw banking entities.
+- Include customers, accounts, transactions, GL accounts, journals, ledger entries, fee assessments, fee collections, revenue recognition and FX rates where applicable.
+- Include representative transformed analytical outputs where useful.
+- Ensure CSV exports reflect actual generated database records. Never invent sample outputs and present them as database extracts.
+- Include headers, consistent data types and documented currency conventions.
+- Never publish credentials, real personal information or confidential employer data.
+
+### 2. Generation Transparency
+- Document how synthetic records are generated.
+- Expose the actual Python generation code.
+- Document generation configuration, distributions, assumptions and random seeds.
+- Provide reproducible commands to regenerate the data.
+- Explain how transaction, ledger, fee and reversal relationships are maintained.
+
+### 3. Data Documentation
+- Document every published CSV, including its grain, columns, primary identifiers, relationships and currency fields.
+- Explain which records are synthetic and which business behaviours they represent.
+- Include representative data quality and reconciliation results.
+
+### 4. Reproducibility
+- A new developer must be able to generate the synthetic dataset and load it into PostgreSQL using documented instructions.
+- CSV exports must be reproducible from the generation pipeline.
+- Large datasets should use representative downloadable samples rather than unnecessarily large Git commits.
+- Keep sample exports and documentation synchronised with the actual database schema.
+
 ## 8. AI Engineering Standards
 
 AI must operate on governed data and approved tools.

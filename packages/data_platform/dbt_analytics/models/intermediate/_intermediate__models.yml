@@ -1,0 +1,228 @@
+version: 2
+
+models:
+  - name: int_customer_accounts
+    description: >
+      Intermediate view enriching customer subledger bank accounts with master customer
+      attributes and pre-aggregated overdraft facility terms. Grain: one row per account_id.
+    columns:
+      - name: account_id
+        description: "Primary key for customer bank account."
+        tests:
+          - unique
+          - not_null
+      - name: customer_id
+        description: "Foreign key to stg_customers.customer_id."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_customers')
+                field: customer_id
+      - name: customer_segment
+        description: "Commercial segmentation tier."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["RETAIL_WEALTH", "COMMERCIAL_SME", "INSTITUTIONAL"]
+      - name: account_currency
+        description: "Account ISO 4217 denomination currency."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["EUR", "USD", "GBP", "CHF"]
+
+  - name: int_transactions_enriched
+    description: >
+      Intermediate view joining commercial transactions to customer/account attributes
+      and daily ECB FX rates to EUR. Grain: one row per transaction_id.
+    columns:
+      - name: transaction_id
+        description: "Primary key for commercial transaction."
+        tests:
+          - unique
+          - not_null
+      - name: customer_id
+        description: "Originating customer identifier."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_customers')
+                field: customer_id
+      - name: account_id
+        description: "Originating bank account identifier."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_accounts')
+                field: account_id
+      - name: transaction_amount
+        description: "Principal amount in transaction_currency."
+        tests:
+          - not_null
+      - name: reporting_eur_fx_rate
+        description: "Daily mid-rate from transaction_currency to EUR."
+        tests:
+          - not_null
+      - name: transaction_amount_eur
+        description: "Principal transaction amount converted to EUR reporting currency."
+        tests:
+          - not_null
+
+  - name: int_journal_balances
+    description: >
+      Intermediate accounting view aggregating ledger postings per journal and currency
+      to verify double-entry balance (SUM(DEBIT) == SUM(CREDIT)).
+      Grain: one row per (journal_id, currency).
+    columns:
+      - name: journal_id
+        description: "Accounting journal identifier."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_journals')
+                field: journal_id
+      - name: currency
+        description: "Currency leg of the journal."
+        tests:
+          - not_null
+      - name: total_debit_amount
+        description: "Sum of debit postings for this journal and currency."
+        tests:
+          - not_null
+      - name: total_credit_amount
+        description: "Sum of credit postings for this journal and currency."
+        tests:
+          - not_null
+      - name: net_imbalance_amount
+        description: "total_debit_amount minus total_credit_amount (must be 0.0000)."
+        tests:
+          - not_null
+      - name: is_balanced
+        description: "Boolean flag indicating whether total debits equal total credits."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [true]
+
+  - name: int_fee_lifecycle
+    description: >
+      Intermediate fee lifecycle view uniting fee assessments, pre-aggregated collection
+      attempts, and revenue recognitions at assessment grain without fan-out.
+      Grain: one row per assessment_id.
+    columns:
+      - name: assessment_id
+        description: "Primary key for fee assessment."
+        tests:
+          - unique
+          - not_null
+      - name: transaction_id
+        description: "Associated transaction identifier."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_transactions')
+                field: transaction_id
+      - name: customer_id
+        description: "Associated customer identifier."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_customers')
+                field: customer_id
+      - name: account_id
+        description: "Associated account identifier."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_accounts')
+                field: account_id
+      - name: currency
+        description: "Native currency of the fee assessment and collection."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["EUR", "USD", "GBP", "CHF"]
+      - name: gross_assessed_amount
+        description: "Gross assessed fee before waivers in native currency."
+        tests:
+          - not_null
+      - name: waived_amount
+        description: "Waived fee amount in native currency."
+        tests:
+          - not_null
+      - name: net_collectible_amount
+        description: "Net collectible fee after waivers in native currency."
+        tests:
+          - not_null
+      - name: collected_amount
+        description: "Total collected fee amount in native currency."
+        tests:
+          - not_null
+      - name: outstanding_amount
+        description: "Remaining uncollected fee balance in native currency."
+        tests:
+          - not_null
+      - name: reversed_amount
+        description: "Reversed fee revenue amount in native currency."
+        tests:
+          - not_null
+      - name: net_recognized_revenue
+        description: "Net recognized revenue after reversals and pass-through costs in native currency."
+        tests:
+          - not_null
+      - name: eur_fx_rate
+        description: "Daily ECB mid-rate converting native currency to EUR on assessed_date."
+        tests:
+          - not_null
+      - name: net_recognized_revenue_eur
+        description: "Net recognized revenue converted to EUR reporting currency."
+        tests:
+          - not_null
+
+  - name: int_customer_revenue
+    description: >
+      Intermediate customer revenue aggregation by customer, reporting month, native
+      currency, and revenue category. Grain: one row per (customer_id, reporting_month, currency, revenue_category).
+    columns:
+      - name: customer_id
+        description: "Customer identifier."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_customers')
+                field: customer_id
+      - name: reporting_month
+        description: "First day of the calendar month in which the fee was assessed."
+        tests:
+          - not_null
+      - name: currency
+        description: "Native currency of the fee and revenue."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["EUR", "USD", "GBP", "CHF"]
+      - name: revenue_category
+        description: "Fee/transaction product category."
+        tests:
+          - not_null
+      - name: net_recognized_revenue
+        description: "Net recognized revenue in native currency."
+        tests:
+          - not_null
+      - name: net_recognized_revenue_eur
+        description: "Net recognized revenue converted to EUR reporting currency."
+        tests:
+          - not_null

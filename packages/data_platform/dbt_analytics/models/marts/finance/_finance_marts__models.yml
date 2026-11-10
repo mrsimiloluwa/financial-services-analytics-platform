@@ -1,0 +1,293 @@
+version: 2
+
+models:
+  - name: fct_ledger_entries
+    description: >
+      Finance Kimball General Ledger posting fact table with separate debit and credit
+      amounts in native currency and explicit EUR reporting values.
+      Grain: one row per entry_id.
+    columns:
+      - name: entry_id
+        description: "Primary key for ledger posting line."
+        tests:
+          - unique
+          - not_null
+      - name: journal_id
+        description: "Foreign key to stg_journals.journal_id."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_journals')
+                field: journal_id
+      - name: gl_account_id
+        description: "Foreign key to dim_gl_accounts.gl_account_id."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_gl_accounts')
+                field: gl_account_id
+      - name: posting_date
+        description: "Foreign key to dim_date.date_day."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+      - name: entry_type
+        description: "DEBIT or CREDIT."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["DEBIT", "CREDIT"]
+      - name: currency
+        description: "Native currency of the ledger leg."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["EUR", "USD", "GBP", "CHF"]
+      - name: debit_amount
+        description: "Debit amount in native currency (0.0000 if CREDIT)."
+        tests:
+          - not_null
+      - name: credit_amount
+        description: "Credit amount in native currency (0.0000 if DEBIT)."
+        tests:
+          - not_null
+      - name: eur_fx_rate
+        description: "Daily ECB mid-rate from currency to EUR on posting_date."
+        tests:
+          - not_null
+      - name: debit_amount_eur
+        description: "Debit amount converted to EUR."
+        tests:
+          - not_null
+      - name: credit_amount_eur
+        description: "Credit amount converted to EUR."
+        tests:
+          - not_null
+
+  - name: fct_fee_assessments
+    description: >
+      Finance Kimball fee assessment fact table reconciling gross assessed fees,
+      waivers, net collectible fees, collections, outstanding arrears, reversals,
+      and net recognized revenue at assessment grain.
+      Grain: one row per assessment_id.
+    columns:
+      - name: assessment_id
+        description: "Primary key for fee assessment."
+        tests:
+          - unique
+          - not_null
+      - name: transaction_id
+        description: "Foreign key to fct_transactions.transaction_id."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('fct_transactions')
+                field: transaction_id
+      - name: customer_id
+        description: "Foreign key to dim_customers.customer_id."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customers')
+                field: customer_id
+      - name: account_id
+        description: "Foreign key to dim_accounts.account_id."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_accounts')
+                field: account_id
+      - name: assessed_date
+        description: "Foreign key to dim_date.date_day."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+      - name: currency
+        description: "Native currency of the fee assessment."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["EUR", "USD", "GBP", "CHF"]
+      - name: gross_assessed_amount
+        description: "Gross assessed fee before waivers in native currency."
+        tests:
+          - not_null
+      - name: waived_amount
+        description: "Waived fee amount in native currency."
+        tests:
+          - not_null
+      - name: net_collectible_amount
+        description: "Net collectible fee (gross - waived) in native currency."
+        tests:
+          - not_null
+      - name: collected_amount
+        description: "Total collected fee amount in native currency."
+        tests:
+          - not_null
+      - name: outstanding_amount
+        description: "Remaining collectible balance in native currency."
+        tests:
+          - not_null
+      - name: net_recognized_revenue
+        description: "Net recognized revenue in native currency."
+        tests:
+          - not_null
+      - name: net_recognized_revenue_eur
+        description: "Net recognized revenue converted to EUR reporting currency."
+        tests:
+          - not_null
+
+  - name: fct_fee_collections
+    description: >
+      Finance Kimball fee collection attempt fact table tracking each sweep execution,
+      target vs. collected/outstanding amounts, ledger link, and recognized revenue.
+      Grain: one row per collection_id.
+    columns:
+      - name: collection_id
+        description: "Primary key for fee collection attempt."
+        tests:
+          - unique
+          - not_null
+      - name: assessment_id
+        description: "Foreign key to fct_fee_assessments.assessment_id."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('fct_fee_assessments')
+                field: assessment_id
+      - name: transaction_id
+        description: "Foreign key to fct_transactions.transaction_id."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('fct_transactions')
+                field: transaction_id
+      - name: customer_id
+        description: "Foreign key to dim_customers.customer_id."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customers')
+                field: customer_id
+      - name: account_id
+        description: "Foreign key to dim_accounts.account_id."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_accounts')
+                field: account_id
+      - name: attempted_date
+        description: "Foreign key to dim_date.date_day."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+      - name: collection_status
+        description: "SETTLED, PARTIAL, FAILED, or REVERSED."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["SETTLED", "PARTIAL", "FAILED", "REVERSED"]
+      - name: target_amount
+        description: "Target collectible amount in native currency."
+        tests:
+          - not_null
+      - name: collected_amount
+        description: "Collected amount in native currency."
+        tests:
+          - not_null
+      - name: outstanding_amount
+        description: "Remaining uncollected amount in native currency."
+        tests:
+          - not_null
+
+  - name: fct_customer_revenue
+    description: >
+      Finance Kimball customer fee and revenue mart aggregated by customer,
+      reporting month, native currency, and revenue category.
+      Grain: one row per (customer_id, reporting_month, currency, revenue_category).
+    columns:
+      - name: customer_revenue_id
+        description: "Deterministic composite primary key (customer_id|YYYY-MM|currency|revenue_category)."
+        tests:
+          - unique
+          - not_null
+      - name: customer_id
+        description: "Foreign key to dim_customers.customer_id."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customers')
+                field: customer_id
+      - name: reporting_month
+        description: "First day of the calendar reporting month."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+      - name: currency
+        description: "Native currency of the underlying fee and revenue records."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["EUR", "USD", "GBP", "CHF"]
+      - name: revenue_category
+        description: "Product fee / transaction category."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["WIRE_TRANSFER", "ACH_PAYMENT", "CARD_SETTLEMENT", "FX_CONVERSION", "INTEREST_POSTING"]
+      - name: gross_assessed_fee_amount
+        description: "Gross assessed fees in native currency."
+        tests:
+          - not_null
+      - name: waived_fee_amount
+        description: "Waived fees in native currency."
+        tests:
+          - not_null
+      - name: net_collectible_fee_amount
+        description: "Net collectible fees in native currency."
+        tests:
+          - not_null
+      - name: collected_fee_amount
+        description: "Collected fees in native currency."
+        tests:
+          - not_null
+      - name: outstanding_fee_amount
+        description: "Outstanding uncollected fees in native currency."
+        tests:
+          - not_null
+      - name: net_recognized_revenue
+        description: "Net recognized revenue in native currency."
+        tests:
+          - not_null
+      - name: net_recognized_revenue_eur
+        description: "Net recognized revenue converted to EUR reporting currency."
+        tests:
+          - not_null
