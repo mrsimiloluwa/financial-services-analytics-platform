@@ -67,7 +67,7 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_DB: analytics_platform_test
+          POSTGRES_DB: analytics_platform
           POSTGRES_USER: analytics_user
           POSTGRES_PASSWORD: analytics_dev_password_change_me
         ports:
@@ -83,7 +83,7 @@ jobs:
       DATABASE_BACKEND: postgres
       POSTGRES_HOST: localhost
       POSTGRES_PORT: 5432
-      POSTGRES_DB: analytics_platform_test
+      POSTGRES_DB: analytics_platform
       POSTGRES_TEST_DB: analytics_platform_test
       POSTGRES_USER: analytics_user
       POSTGRES_PASSWORD: analytics_dev_password_change_me
@@ -113,13 +113,19 @@ jobs:
       - name: Setup dbt profiles
         run: uv run python -m data_platform.dbt_setup --profiles-dir /tmp/dbt_profiles
 
+      - name: Ingest DEV dataset
+        run: uv run python -m data_platform.ingestion.run --profile DEV --database analytics_platform
+
       - name: Ingest TEST dataset
         run: uv run python -m data_platform.ingestion.run --profile TEST --database analytics_platform_test
 
       - name: Provision least-privilege analytics_reader
         run: uv run python -m data_platform.security.provision_reader
 
-      - name: Run dbt analytics build
+      - name: Run dbt analytics build (dev)
+        run: uv run dbt build --project-dir packages/data_platform/dbt_analytics --profiles-dir /tmp/dbt_profiles --target dev
+
+      - name: Run dbt analytics build (test)
         run: uv run dbt build --project-dir packages/data_platform/dbt_analytics --profiles-dir /tmp/dbt_profiles --target test
 
       - name: Grant analytics_reader permissions
