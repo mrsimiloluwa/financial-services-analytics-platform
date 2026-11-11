@@ -28,6 +28,12 @@ if (
 ):
     os.environ["DATABASE_BACKEND"] = "duckdb"
 
+# Streamlit keeps imported modules (and lru_cache state) alive across redeploys/reruns.
+# Reset cached settings so the backend selected above is always honoured.
+from shared.config import get_settings as _get_settings_for_reset  # noqa: E402
+
+_get_settings_for_reset.cache_clear()
+
 import httpx
 import pandas as pd
 import streamlit as st
@@ -132,8 +138,9 @@ def load_overview_data(use_test_db: bool) -> tuple[FinancialOverviewResponse | N
     try:
         return AnalyticsDataService.get_financial_overview(use_test_db=use_test_db), None
     except Exception as exc:
-        logger.exception("Failed loading overview metrics: %s", exc)
-        return None, str(exc)
+        backend = get_settings().database_backend
+        logger.exception("Failed loading overview metrics (backend=%s): %s", backend, exc)
+        return None, f"[backend={backend}] {exc}"
 
 
 @st.cache_data(ttl=30)
