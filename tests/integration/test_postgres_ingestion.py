@@ -8,23 +8,56 @@ import psycopg
 import pytest
 from data_platform.generator.config import GeneratorConfig
 from data_platform.generator.generator import SyntheticDataGenerator
-from data_platform.ingestion.ddl import init_database_schemas, truncate_raw_tables
+from data_platform.ingestion.ddl import (
+    assert_is_test_database,
+    init_database_schemas,
+    truncate_raw_tables,
+)
 from data_platform.ingestion.pipeline import IngestionPipeline
 from shared.config import Settings
-from shared.db import get_postgres_connection
+from shared.db import TEST_DATABASE_NAME, get_test_postgres_connection
 
 
 @pytest.fixture
 def pg_conn() -> psycopg.Connection:
-    """Provide a PostgreSQL connection for integration testing, skipping if unreachable locally."""
+    """Provide an isolated PostgreSQL test database connection (analytics_platform_test)."""
     settings = Settings()
     try:
-        with get_postgres_connection(settings) as conn:
+        with get_test_postgres_connection(settings) as conn:
+            active_db = assert_is_test_database(conn)
+            assert active_db == TEST_DATABASE_NAME
             yield conn
     except psycopg.OperationalError as exc:
         if os.getenv("CI") == "true" or settings.app_env == "testing":
             pytest.fail(f"PostgreSQL connection failed in CI/testing environment: {exc}")
         pytest.skip(f"PostgreSQL container not accessible: {exc}")
+
+
+def test_safety_guard_blocks_non_test_database_truncation() -> None:
+    """Verify truncate_raw_tables refuses to execute against analytics_platform."""
+
+    class _FakeDevCursor:
+        def execute(self, query: str) -> None:
+            self.last_query = query
+
+        def fetchone(self) -> tuple[str]:
+            return ("analytics_platform",)
+
+        def __enter__(self) -> "_FakeDevCursor":
+            return self
+
+        def __exit__(self, *args: object) -> None:
+            pass
+
+    class _FakeDevConn:
+        def cursor(self) -> _FakeDevCursor:
+            return _FakeDevCursor()
+
+    with pytest.raises(
+        PermissionError,
+        match="Safety guard blocked destructive operation on database 'analytics_platform'",
+    ):
+        truncate_raw_tables(_FakeDevConn())  # type: ignore[arg-type]
 
 
 def test_schema_initialization(pg_conn: psycopg.Connection) -> None:
@@ -150,10 +183,46 @@ def test_transaction_rollback_on_failure(pg_conn: psycopg.Connection) -> None:
     with pytest.raises(RuntimeError, match="failed and was rolled back"):
         pipeline.ingest_batch(batch_data=batch_data, run_reconciliation=False)
 
-    # Verify that the corrupt entry was not persisted
+    # Verify that the corrupt entry was not persisted and batch was logged as FAILED
     with pg_conn.cursor() as cur:
         cur.execute(
             "SELECT COUNT(*) FROM raw.ledger_entries WHERE entry_id = %s;",
             (invalid_entry.entry_id,),
         )
         assert cur.fetchone()[0] == 0
+
+        cur.execute(
+            "SELECT status, completed_at FROM raw.ingestion_batch_manifests WHERE batch_id = %s;",
+            (batch_data.manifest.batch_id,),
+        )
+        manifest_row = cur.fetchone()
+        assert manifest_row is not None
+        assert manifest_row[0] == "FAILED"
+        assert manifest_row[1] is None
+
+
+def test_conflicting_duplicate_key_detection(pg_conn: psycopg.Connection) -> None:
+    """Verify _detect_conflicts identifies incoming records that differ from existing raw records."""
+    pipeline = IngestionPipeline(pg_conn)
+
+    # 1. Load an initial valid TEST batch
+    config = GeneratorConfig.get_profile("TEST", seed=42, reporting_base_currency="EUR")
+    batch_data_1 = SyntheticDataGenerator(config=config).generate_batch()
+    pipeline.ingest_batch(batch_data=batch_data_1, run_reconciliation=False)
+
+    # 2. Prepare a second batch containing a duplicate transaction ID with altered financial amount
+    batch_data_2 = SyntheticDataGenerator(config=config).generate_batch()
+    original_txn = batch_data_2.transactions[0]
+    original_txn.transaction_amount += Decimal("500.0000")  # Corrupt the financial amount
+
+    # Truncate staging and copy to staging
+    from data_platform.ingestion.ddl import truncate_staging_tables
+
+    truncate_staging_tables(pg_conn)
+    pipeline._copy_to_staging(batch_data_2)
+
+    # 3. Detect conflicts
+    conflicts = pipeline._detect_conflicts()
+    assert "conflicting_transactions" in conflicts
+    assert conflicts["conflicting_transactions"] >= 1
+    truncate_staging_tables(pg_conn)

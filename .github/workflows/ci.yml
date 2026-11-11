@@ -1,4 +1,4 @@
-name: CI
+name: CI / Production Quality Gate
 
 on:
   push:
@@ -6,18 +6,70 @@ on:
   pull_request:
     branches: [main]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  test:
-    name: Code Quality & Integration Tests
+  lint-and-format:
+    name: Code Quality (Ruff)
     runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          version: "latest"
+
+      - name: Set up Python 3.12
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync --all-groups
+
+      - name: Ruff Linter
+        run: uv run ruff check .
+
+      - name: Ruff Format Check
+        run: uv run ruff format --check .
+
+  documentation:
+    name: Documentation Validation (MkDocs)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          version: "latest"
+
+      - name: Set up Python 3.12
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync --all-groups
+
+      - name: Build MkDocs with strict link checking
+        run: uv run mkdocs build --strict
+
+  test-and-validate:
+    name: Automated Tests & dbt Warehouse Validation
+    runs-on: ubuntu-latest
+    needs: [lint-and-format]
 
     services:
       postgres:
         image: postgres:16-alpine
         env:
           POSTGRES_DB: analytics_platform_test
-          POSTGRES_USER: analytics_test_user
-          POSTGRES_PASSWORD: analytics_test_password
+          POSTGRES_USER: analytics_user
+          POSTGRES_PASSWORD: analytics_dev_password_change_me
         ports:
           - 5432:5432
         options: >-
@@ -31,9 +83,15 @@ jobs:
       POSTGRES_HOST: localhost
       POSTGRES_PORT: 5432
       POSTGRES_DB: analytics_platform_test
-      POSTGRES_USER: analytics_test_user
-      POSTGRES_PASSWORD: analytics_test_password
+      POSTGRES_TEST_DB: analytics_platform_test
+      POSTGRES_USER: analytics_user
+      POSTGRES_PASSWORD: analytics_dev_password_change_me
+      POSTGRES_READER_USER: analytics_reader
+      POSTGRES_READER_PASSWORD: analytics_reader_secret
+      LLM_PROVIDER: mock
+      API_AUTH_ENABLED: "false"
       DUCKDB_DATABASE: ":memory:"
+      PYTHONPATH: "packages/shared/src:packages/data_platform/src:packages/ai_services/src:packages/data_apps/src"
 
     steps:
       - name: Checkout repository
@@ -51,11 +109,36 @@ jobs:
       - name: Install dependencies
         run: uv sync --all-groups
 
-      - name: Lint with Ruff
-        run: uv run ruff check .
+      - name: Setup dbt profiles
+        run: uv run python -m data_platform.dbt_setup --profiles-dir /tmp/dbt_profiles
 
-      - name: Check formatting with Ruff
-        run: uv run ruff format --check .
+      - name: Ingest TEST dataset
+        run: uv run python -m data_platform.ingestion.run --profile TEST --database analytics_platform_test
 
-      - name: Run unit & integration tests
-        run: uv run pytest
+      - name: Run dbt analytics build
+        run: uv run dbt build --project-dir packages/data_platform/dbt_analytics --profiles-dir /tmp/dbt_profiles --target test
+
+      - name: Provision least-privilege analytics_reader
+        run: uv run python -m data_platform.security.provision_reader
+
+      - name: Run pytest test suite
+        run: uv run pytest tests/ -v
+
+  docker-build:
+    name: Docker Container Image Build
+    runs-on: ubuntu-latest
+    needs: [lint-and-format]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build application container
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/app/Dockerfile
+          push: false
+          tags: custom-analytics-app:latest

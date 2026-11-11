@@ -30,6 +30,11 @@ RAW_EXPORTS: dict[str, str] = {
 }
 
 ANALYTICAL_EXPORTS: dict[str, str] = {
+    "dim_customers.csv": "SELECT * FROM analytics.dim_customers ORDER BY customer_id",
+    "dim_accounts.csv": "SELECT * FROM analytics.dim_accounts ORDER BY account_id",
+    "fct_fee_collections.csv": (
+        "SELECT * FROM analytics.fct_fee_collections ORDER BY collection_id"
+    ),
     "customer_revenue.csv": (
         "SELECT * FROM analytics.fct_customer_revenue "
         "ORDER BY reporting_month, customer_id, currency, revenue_category"

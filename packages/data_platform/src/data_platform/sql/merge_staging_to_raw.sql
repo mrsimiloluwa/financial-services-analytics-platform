@@ -100,7 +100,12 @@ INSERT INTO raw.revenue_recognitions (
     recognition_id, collection_id, gross_collected_revenue, reversed_revenue_amount,
     pass_through_cost, net_recognized_revenue, recognized_at
 )
-SELECT recognition_id, collection_id, gross_collected_revenue, reversed_revenue_amount,
-       pass_through_cost, net_recognized_revenue, recognized_at
-FROM staging.revenue_recognitions
+SELECT s.recognition_id, s.collection_id, s.gross_collected_revenue, s.reversed_revenue_amount,
+       s.pass_through_cost, s.net_recognized_revenue, s.recognized_at
+FROM staging.revenue_recognitions s
+JOIN raw.fee_collections fc ON s.collection_id = fc.collection_id
+WHERE fc.collection_status IN ('SETTLED', 'PARTIAL')
+  AND NOT EXISTS (
+    SELECT 1 FROM raw.revenue_recognitions r WHERE r.collection_id = s.collection_id
+)
 ON CONFLICT (recognition_id) DO NOTHING;

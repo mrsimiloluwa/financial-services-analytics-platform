@@ -17,6 +17,7 @@ def run_ingestion(
     seed: int = 42,
     reporting_base_currency: str = "EUR",
     reset: bool = False,
+    settings: Settings | None = None,
 ) -> int:
     """Execute end-to-end generation, COPY ingestion, and post-load reconciliation."""
     print(
@@ -38,17 +39,17 @@ def run_ingestion(
     for k, v in batch_data.manifest.entity_counts.items():
         print(f"  - {k}: {v}")
 
-    settings = Settings()
+    active_settings = settings or Settings()
     print(
-        f"[{datetime.now(UTC).isoformat()}] Connecting to PostgreSQL: {settings.postgres_host}:{settings.postgres_port}/{settings.postgres_db}"
+        f"[{datetime.now(UTC).isoformat()}] Connecting to PostgreSQL: {active_settings.postgres_host}:{active_settings.postgres_port}/{active_settings.postgres_db}"
     )
 
-    with get_postgres_connection(settings) as conn:
+    with get_postgres_connection(active_settings) as conn:
         if reset:
             print(
-                f"[{datetime.now(UTC).isoformat()}] Reset requested: truncating existing raw tables..."
+                f"[{datetime.now(UTC).isoformat()}] Reset requested on database '{settings.postgres_db}': truncating existing raw tables..."
             )
-            truncate_raw_tables(conn)
+            truncate_raw_tables(conn, allow_non_test_db=True)
 
         pipeline = IngestionPipeline(conn)
         report = pipeline.ingest_batch(batch_data=batch_data, run_reconciliation=True)

@@ -193,7 +193,7 @@ CREATE TABLE IF NOT EXISTS raw.ingestion_batch_manifests (
     total_records INT NOT NULL,
     entity_counts JSONB NOT NULL,
     started_at TIMESTAMPTZ NOT NULL,
-    completed_at TIMESTAMPTZ NOT NULL,
+    completed_at TIMESTAMPTZ,
     status VARCHAR(32) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

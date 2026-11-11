@@ -1,15 +1,15 @@
 gl_account_id,gl_account_number,account_name,account_category,normal_balance,currency,description,created_at
-GL_ASSET_CENTRAL_BANK,1010,Central Bank Reserve & Settlement,ASSET,DEBIT,EUR,Settlement clearing funds held at central bank/clearing house,2026-11-10 18:59:29.717079+00:00
-GL_ASSET_CUSTOMER_OVERDRAFTS,1040,Customer Overdraft Lending Assets,ASSET,DEBIT,EUR,Asset representing credit drawn by customers under authorized overdraft facilities,2026-11-10 18:59:29.717079+00:00
-GL_ASSET_FX_CLEARING,1030,Foreign Exchange Clearing Position,ASSET,DEBIT,EUR,Multi-currency clearing account ensuring balanced per-currency legs on FX trades,2026-11-10 18:59:29.717079+00:00
-GL_ASSET_NOSTRO_CLEARING,1020,Nostro Correspondent Clearing,ASSET,DEBIT,EUR,Correspondent bank accounts for cross-border wire settlements,2026-11-10 18:59:29.717079+00:00
-GL_CONTRA_REV_WAIVERS,4090,Fee Waivers & Pricing Concessions,REVENUE,DEBIT,EUR,Contra-revenue reducing gross fee revenue for contractual discounts or concessions,2026-11-10 18:59:29.717079+00:00
-GL_EQUITY_RETAINED_EARNINGS,3010,Retained Earnings & Bank Capital,EQUITY,CREDIT,EUR,Accumulated bank net earnings and tier-1 capital reserves,2026-11-10 18:59:29.717079+00:00
-GL_EXP_NETWORK_COSTS,5010,Payment Network Pass-Through Expense,EXPENSE,DEBIT,EUR,Direct external network switch and card scheme costs paid to external clearing rails,2026-11-10 18:59:29.717079+00:00
-GL_LIAB_CUSTOMER_DEPOSITS,2010,Customer Demand Deposits,LIABILITY,CREDIT,EUR,Aggregated customer deposit liabilities across all currencies,2026-11-10 18:59:29.717079+00:00
-GL_LIAB_RESERVED_FUNDS,2020,Customer Reserved & Held Funds,LIABILITY,CREDIT,EUR,Uncleared pre-authorizations and settlement holds,2026-11-10 18:59:29.717079+00:00
-GL_REV_ACH_FEES,4020,ACH & Direct Debit Fee Revenue,REVENUE,CREDIT,EUR,Batch payment and direct debit processing fee income,2026-11-10 18:59:29.717079+00:00
-GL_REV_CARD_FEES,4030,Card Interchange & Settlement Fee Revenue,REVENUE,CREDIT,EUR,Merchant discount and card interchange fee revenue,2026-11-10 18:59:29.717079+00:00
-GL_REV_FX_SPREAD,4040,Foreign Exchange Margin & Spread Income,REVENUE,CREDIT,EUR,Realized bid/ask spread and FX conversion margin income,2026-11-10 18:59:29.717079+00:00
-GL_REV_OVERDRAFT_INTEREST,4050,Overdraft Interest & Facility Income,REVENUE,CREDIT,EUR,Periodic interest charges debited from accounts with negative balances,2026-11-10 18:59:29.717079+00:00
-GL_REV_WIRE_FEES,4010,Wire Transfer Fee Revenue,REVENUE,CREDIT,EUR,Collected domestic and international wire transfer service fees,2026-11-10 18:59:29.717079+00:00
+GL_ASSET_CENTRAL_BANK,1010,Central Bank Reserve & Settlement,ASSET,DEBIT,EUR,Settlement clearing funds held at central bank/clearing house,2026-11-10 21:23:32.999876+00:00
+GL_ASSET_CUSTOMER_OVERDRAFTS,1040,Customer Overdraft Lending Assets,ASSET,DEBIT,EUR,Asset representing credit drawn by customers under authorized overdraft facilities,2026-11-10 21:23:32.999876+00:00
+GL_ASSET_FX_CLEARING,1030,Foreign Exchange Clearing Position,ASSET,DEBIT,EUR,Multi-currency clearing account ensuring balanced per-currency legs on FX trades,2026-11-10 21:23:32.999876+00:00
+GL_ASSET_NOSTRO_CLEARING,1020,Nostro Correspondent Clearing,ASSET,DEBIT,EUR,Correspondent bank accounts for cross-border wire settlements,2026-11-10 21:23:32.999876+00:00
+GL_CONTRA_REV_WAIVERS,4090,Fee Waivers & Pricing Concessions,REVENUE,DEBIT,EUR,Contra-revenue reducing gross fee revenue for contractual discounts or concessions,2026-11-10 21:23:32.999876+00:00
+GL_EQUITY_RETAINED_EARNINGS,3010,Retained Earnings & Bank Capital,EQUITY,CREDIT,EUR,Accumulated bank net earnings and tier-1 capital reserves,2026-11-10 21:23:32.999876+00:00
+GL_EXP_NETWORK_COSTS,5010,Payment Network Pass-Through Expense,EXPENSE,DEBIT,EUR,Direct external network switch and card scheme costs paid to external clearing rails,2026-11-10 21:23:32.999876+00:00
+GL_LIAB_CUSTOMER_DEPOSITS,2010,Customer Demand Deposits,LIABILITY,CREDIT,EUR,Aggregated customer deposit liabilities across all currencies,2026-11-10 21:23:32.999876+00:00
+GL_LIAB_RESERVED_FUNDS,2020,Customer Reserved & Held Funds,LIABILITY,CREDIT,EUR,Uncleared pre-authorizations and settlement holds,2026-11-10 21:23:32.999876+00:00
+GL_REV_ACH_FEES,4020,ACH & Direct Debit Fee Revenue,REVENUE,CREDIT,EUR,Batch payment and direct debit processing fee income,2026-11-10 21:23:32.999876+00:00
+GL_REV_CARD_FEES,4030,Card Interchange & Settlement Fee Revenue,REVENUE,CREDIT,EUR,Merchant discount and card interchange fee revenue,2026-11-10 21:23:32.999876+00:00
+GL_REV_FX_SPREAD,4040,Foreign Exchange Margin & Spread Income,REVENUE,CREDIT,EUR,Realized bid/ask spread and FX conversion margin income,2026-11-10 21:23:32.999876+00:00
+GL_REV_OVERDRAFT_INTEREST,4050,Overdraft Interest & Facility Income,REVENUE,CREDIT,EUR,Periodic interest charges debited from accounts with negative balances,2026-11-10 21:23:32.999876+00:00
+GL_REV_WIRE_FEES,4010,Wire Transfer Fee Revenue,REVENUE,CREDIT,EUR,Collected domestic and international wire transfer service fees,2026-11-10 21:23:32.999876+00:00

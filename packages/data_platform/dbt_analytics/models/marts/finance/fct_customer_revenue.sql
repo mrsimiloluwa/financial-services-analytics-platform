@@ -33,6 +33,7 @@ with customer_revenue as (
         net_collectible_fee_amount_eur,
         collected_fee_amount_eur,
         outstanding_fee_amount_eur,
+        gross_collected_revenue_eur,
         reversed_revenue_amount_eur,
         pass_through_cost_amount_eur,
         net_recognized_revenue_eur
@@ -79,6 +80,7 @@ select
     net_collectible_fee_amount_eur,
     collected_fee_amount_eur,
     outstanding_fee_amount_eur,
+    gross_collected_revenue_eur,
     reversed_revenue_amount_eur,
     pass_through_cost_amount_eur,
     net_recognized_revenue_eur,

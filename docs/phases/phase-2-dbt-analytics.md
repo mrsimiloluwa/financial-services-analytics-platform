@@ -2,11 +2,36 @@
 
 ## 1. Executive Summary
 
-Phase 2 implements the complete **dbt Core 1.12.6 (`dbt-postgres` 1.11.0)** dimensional analytics warehouse at `packages/data_platform/dbt_analytics/`. It transforms the 12 raw PostgreSQL banking tables (`raw.*`) into 26 governed models (12 staging views, 5 intermediate views, 4 core dimensions, and 5 fact tables) in the `analytics` schema, backed by **461 automated data quality tests** (`PASS=487 WARN=0 ERROR=0 SKIP=0`).
+Phase 2 implements the complete **dbt Core 1.12.6 (`dbt-postgres` 1.11.0)** dimensional analytics warehouse at `packages/data_platform/dbt_analytics/`. It transforms the 12 raw PostgreSQL banking tables (`raw.*`) into 26 governed models (12 staging views, 5 intermediate views, 4 core dimensions, and 5 fact tables) in the `analytics` schema, backed by **462 automated data quality tests** (`PASS=488 WARN=0 ERROR=0 SKIP=0`).
+
+The production analytics database `analytics_platform` hosts the full **DEV showcase dataset** (50 customers, 5,000 transactions, ~49,500 total records), while integration tests are strictly isolated on `analytics_platform_test` with automated provisioning and safety guards.
 
 ---
 
-## 2. Project Structure
+## 2. Dataset Profiles & Database Separation
+
+The platform establishes strict database separation:
+
+| Dimension / Metric | Development / Showcase (`analytics_platform`) | Automated Test Environment (`analytics_platform_test`) |
+| :--- | :--- | :--- |
+| **Profile** | `DEV` | `TEST` |
+| **Seed** | `42` | `42` |
+| **Reporting Currency** | `EUR` | `EUR` |
+| **Customers** | 50 | 10 |
+| **Accounts** | 111 | 24 |
+| **Overdraft Facilities** | 74 | 20 |
+| **Transactions** | 5,000 | 200 |
+| **Journals** | 8,273 | 328 |
+| **Ledger Entries** | 19,021 | 770 |
+| **Fee Assessments** | 3,791 | 148 |
+| **Fee Collections** | 3,791 | 148 |
+| **Revenue Recognitions**| 3,591 | 140 |
+| **Sample Exports Path** | `sample_data/*.csv` | `sample_data/test/*.csv` |
+| **Safety Guard** | Rejects unflagged `truncate_raw_tables()` | Target for integration tests |
+
+---
+
+## 3. Project Structure
 
 ```text
 packages/data_platform/dbt_analytics/
@@ -99,15 +124,16 @@ packages/data_platform/dbt_analytics/
   --profiles-dir /tmp/dbt_profiles
 ```
 
-### Actual Query Results from Built Marts (`analytics.*`)
+### Actual Query Results from Built Marts (`analytics.*`) — DEV Showcase Dataset
 
 #### Revenue by Customer Segment (`analytics.fct_customer_revenue`)
 
 | Customer Segment | Customers | Assessments | Gross Assessed (EUR) | Waived (EUR) | Net Collectible (EUR) | Collected (EUR) | Outstanding Arrears (EUR) | Net Recognized Revenue (EUR) | Collection Rate (%) |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| `COMMERCIAL_SME` | 6 | 104 | 13,377.7863 | 35.9028 | 13,341.8835 | 13,205.0181 | 136.8654 | 12,544.7672 | 98.97% |
-| `INSTITUTIONAL` | 2 | 21 | 4,852.4063 | 64.3476 | 4,788.0587 | 4,788.0587 | 0.0000 | 4,548.6556 | 100.00% |
-| `RETAIL_WEALTH` | 2 | 23 | 363.7705 | 7.0434 | 356.7271 | 316.8145 | 39.9126 | 300.9738 | 88.81% |
+| `COMMERCIAL_SME` | 23 | 2,175 | 222,971.69 | 4,363.07 | 218,608.62 | 202,818.06 | 15,790.56 | 192,677.16 | 92.78% |
+| `INSTITUTIONAL` | 7 | 710 | 228,828.94 | 3,472.23 | 225,356.71 | 212,651.01 | 12,705.70 | 202,018.46 | 94.36% |
+| `RETAIL_WEALTH` | 16 | 906 | 15,649.08 | 226.26 | 15,422.82 | 14,638.97 | 783.84 | 13,907.03 | 94.92% |
+| **Total** | **46** | **3,791** | **467,449.71** | **8,061.56** | **459,388.15** | **430,108.04** | **29,280.10** | **408,602.65** | **93.63%** |
 
 #### Multi-Currency Revenue Reconciliation (`analytics.fct_customer_revenue`)
 

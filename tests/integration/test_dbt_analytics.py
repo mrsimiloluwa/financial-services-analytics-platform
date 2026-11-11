@@ -5,16 +5,19 @@ from decimal import Decimal
 
 import psycopg
 import pytest
+from data_platform.ingestion.ddl import assert_is_test_database
 from shared.config import Settings
-from shared.db import get_postgres_connection
+from shared.db import TEST_DATABASE_NAME, get_test_postgres_connection
 
 
 @pytest.fixture
 def pg_conn() -> psycopg.Connection:
-    """Provide a PostgreSQL connection for dbt analytics integration testing."""
+    """Provide an isolated PostgreSQL connection (analytics_platform_test) for dbt testing."""
     settings = Settings()
     try:
-        with get_postgres_connection(settings) as conn:
+        with get_test_postgres_connection(settings) as conn:
+            active_db = assert_is_test_database(conn)
+            assert active_db == TEST_DATABASE_NAME
             yield conn
     except psycopg.OperationalError as exc:
         if os.getenv("CI") == "true" or settings.app_env == "testing":

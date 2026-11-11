@@ -31,6 +31,7 @@ with fee_lifecycle as (
         net_collectible_amount_eur,
         collected_amount_eur,
         outstanding_amount_eur,
+        gross_collected_revenue_eur,
         reversed_amount_eur,
         pass_through_cost_eur,
         net_recognized_revenue_eur,
@@ -68,6 +69,7 @@ select
     cast(sum(net_collectible_amount_eur) as numeric(18, 4)) as net_collectible_fee_amount_eur,
     cast(sum(collected_amount_eur) as numeric(18, 4)) as collected_fee_amount_eur,
     cast(sum(outstanding_amount_eur) as numeric(18, 4)) as outstanding_fee_amount_eur,
+    cast(sum(gross_collected_revenue_eur) as numeric(18, 4)) as gross_collected_revenue_eur,
     cast(sum(reversed_amount_eur) as numeric(18, 4)) as reversed_revenue_amount_eur,
     cast(sum(pass_through_cost_eur) as numeric(18, 4)) as pass_through_cost_amount_eur,
     cast(sum(net_recognized_revenue_eur) as numeric(18, 4)) as net_recognized_revenue_eur

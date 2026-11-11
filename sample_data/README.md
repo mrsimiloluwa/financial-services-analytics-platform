@@ -1,56 +1,81 @@
-# Synthetic Banking Sample Data & Analytical Exports
+# Synthetic Sample Data & Analytical Exports
 
-This directory contains independently inspectable CSV exports extracted directly from the live PostgreSQL `raw` schema and the `analytics` dbt dimensional warehouse.
+This directory contains representative raw banking table extracts and dbt analytical outputs produced by the **Enterprise AI Analytics Platform**'s deterministic financial simulation engine.
 
-> [!NOTE]
-> **Synthetic Data Guarantee**
-> Every record in `sample_data/` is 100% synthetic, deterministically generated using `random_seed = 42` (`DEV` profile), and contains zero personal, customer, or confidential employer information.
+All datasets are 100% synthetic, reproducible, and mathematically verified against double-entry General Ledger balancing and pricing schedule accounting rules.
 
 ---
 
-## 1. Reproducible Regeneration Commands
+## 1. Directory Structure
 
-To regenerate the synthetic banking dataset, ingest it into PostgreSQL, build all dbt models, and re-export all CSV files in this directory:
-
-```bash
-# 1. Run the deterministic synthetic generator & idempotent PostgreSQL ingestion pipeline
-.venv/bin/uv run --env-file .env python -m data_platform.ingestion.run
-
-# 2. Build and test the dbt dimensional warehouse in the analytics schema
-.venv/bin/uv run --env-file .env dbt build \
-  --project-dir packages/data_platform/dbt_analytics \
-  --profiles-dir /tmp/dbt_profiles
-
-# 3. Export raw and transformed analytical CSVs from PostgreSQL
-.venv/bin/uv run --env-file .env python -m data_platform.ingestion.export_samples
+```
+sample_data/
+├── README.md                          # Directory guide and reproduction instructions
+├── accounts.csv                       # Subledger accounts across EUR, USD, GBP, CHF
+├── customers.csv                      # Corporate SME, institutional, and wealth customers
+├── overdraft_facilities.csv           # Contractual overdraft facility agreements
+├── fx_rates.csv                       # Historical daily FX rates (first 15 days sample)
+├── transactions.csv                   # Multi-channel commercial payment transactions
+├── journals.csv                       # Balanced double-entry accounting journal events
+├── ledger_entries.csv                 # General Ledger debit and credit postings
+├── fee_assessments.csv                # Contractual fee assessments and waiver records
+├── fee_collections.csv                # Fee sweep collection attempts and failure logs
+├── revenue_recognitions.csv           # Accounting revenue recognition records
+├── gl_accounts.csv                    # Governed Master Chart of Accounts
+├── ingestion_batch_manifests.csv      # Ingestion audit and lineage tracking
+├── customer_revenue.csv               # Analytical mart: monthly customer revenue by segment
+├── fee_assessments_analytics.csv      # Analytical mart: full fee lifecycle from assessment to settled cash
+├── transaction_analytics.csv          # Analytical mart: enriched commercial transactions with EUR conversion
+├── dim_customers.csv                  # Analytical mart: governed customer dimensions and tiers
+├── dim_accounts.csv                   # Analytical mart: governed account dimensions and take-rate tiers
+├── fct_fee_collections.csv           # Analytical mart: fee sweep attempts and collection lifecycle
+├── revenue_by_segment.csv             # Summary mart: customer segment profitability roll-up
+└── test/                              # Preserved sample exports from the small TEST profile
+    ├── README.md                      # TEST profile documentation
+    └── *.csv                          # Complete snapshot of raw and analytical TEST CSVs
 ```
 
 ---
 
-## 2. Raw Banking Entity Exports (`raw.*`)
+## 2. Profile Comparison & Summary
 
-| CSV File | Rows | Grain | Primary Key | Foreign Keys / Relationships | Currency Fields & Conventions |
-| :--- | ---: | :--- | :--- | :--- | :--- |
-| `gl_accounts.csv` | 14 | One row per General Ledger account | `gl_account_id` | Referenced by `ledger_entries.gl_account_id` | `currency` (ISO 4217 base currency `EUR`) |
-| `customers.csv` | 10 | One row per banking customer | `customer_id` | Referenced by `accounts.customer_id` | N/A |
-| `accounts.csv` | 24 | One row per customer bank account | `account_id` | `customer_id` -> `customers.customer_id` | `currency` (`EUR`, `USD`, `GBP`); `opening_balance`, `reserved_funds` in `NUMERIC(18,4)` |
-| `overdraft_facilities.csv` | 20 | One row per overdraft agreement | `facility_id` | `account_id` -> `accounts.account_id` | `authorized_limit` in linked account `currency` |
-| `fx_rates.csv` | 240 | One row per daily currency pair quote (Jan 1–15, 2025 representative window of 5,840 full-year rows) | `rate_id` | Natural key `(rate_date, from_currency, to_currency)` | `from_currency`, `to_currency` (`EUR`, `USD`, `GBP`, `CHF`); `mid_rate`, `bid_rate`, `ask_rate` in `NUMERIC(18,6)` |
-| `transactions.csv` | 200 | One row per commercial transaction | `transaction_id` | `account_id` -> `accounts.account_id`; `journal_id` -> `journals.journal_id` | `transaction_currency`, `settlement_currency`; `transaction_amount`, `base_currency_amount` in `NUMERIC(18,4)` |
-| `journals.csv` | 328 | One row per accounting journal header | `journal_id` | `transaction_id` -> `transactions.transaction_id` | N/A (header) |
-| `ledger_entries.csv` | 770 | One row per double-entry GL posting line | `entry_id` | `journal_id` -> `journals.journal_id`; `gl_account_id` -> `gl_accounts.gl_account_id` | `currency` (`EUR`, `USD`, `GBP`); `amount` in `NUMERIC(18,4)` |
-| `fee_assessments.csv` | 148 | One row per transaction fee assessment | `assessment_id` | `transaction_id` -> `transactions.transaction_id`; `account_id` -> `accounts.account_id` | Assessed in linked account `currency`; `gross_assessed_amount`, `waived_amount`, `net_collectible_amount` in `NUMERIC(18,4)` |
-| `fee_collections.csv` | 148 | One row per fee collection sweep attempt | `collection_id` | `assessment_id` -> `fee_assessments.assessment_id`; `linked_ledger_entry_id` -> `ledger_entries.entry_id` | Swept in linked account `currency`; `target_amount`, `collected_amount`, `outstanding_amount` in `NUMERIC(18,4)` |
-| `revenue_recognitions.csv` | 140 | One row per settled collection revenue entry | `recognition_id` | `collection_id` -> `fee_collections.collection_id` | Recognized in linked account `currency`; `gross_collected_revenue`, `reversed_revenue_amount`, `pass_through_cost`, `net_recognized_revenue` in `NUMERIC(18,4)` |
-| `ingestion_batch_manifests.csv` | 2 | One row per ingestion batch run | `batch_id` | Operational audit log | `reporting_base_currency` (`EUR`) |
+| Entity / Metric | DEV Showcase (Root `sample_data/`) | TEST Profile (`sample_data/test/`) | Purpose & Invariants |
+| :--- | :--- | :--- | :--- |
+| **Profile Name** | `DEV` | `TEST` | Development showcase vs. rapid CI testing |
+| **Random Seed** | `42` | `42` | Deterministic PRNG seed across all engines |
+| **Reporting Currency** | `EUR` | `EUR` | Base currency for unified reporting and FX |
+| **Customers** | 50 | 10 | Retail Wealth, Commercial SME, Institutional |
+| **Accounts** | 111 | 24 | Operating, Treasury Sweep, Merchant Settlement |
+| **Overdraft Facilities** | 74 | 20 | Authorized credit facilities |
+| **Transactions** | 5,000 | 200 | Wires, ACH, Cards, FX conversions |
+| **Journals** | 8,273 | 328 | Balanced double-entry journal headers |
+| **Ledger Entries** | 19,021 | 770 | Immutable debits and credits ($\sum D = \sum C$) |
+| **Fee Assessments** | 3,791 | 148 | Pricing schedules with volume waivers |
+| **Fee Collections** | 3,791 | 148 | Sweep attempts (Settled, Partial, Failed) |
+| **Revenue Recognitions**| 3,591 | 140 | Recognized net revenue after pass-through |
+| **Customer Revenue Mart**| 1,667 rows | 128 rows | Grain: `(reporting_month, customer_id, currency, revenue_category)` |
 
 ---
 
-## 3. Transformed Analytical Mart Exports (`analytics.*`)
+## 3. Reproduction Commands
 
-| CSV File | Rows | Source Mart / Query | Grain | Purpose & Currency Treatment |
-| :--- | ---: | :--- | :--- | :--- |
-| `customer_revenue.csv` | 128 | `analytics.fct_customer_revenue` | `(customer_id, reporting_month, currency, revenue_category)` | Monthly customer fee and net recognized revenue preserving native `currency` alongside explicit `*_eur` columns. |
-| `fee_assessments_analytics.csv` | 148 | `analytics.fct_fee_assessments` | `assessment_id` | End-to-end fee lifecycle reconciling gross assessed, waived, net collectible, collected, outstanding arrears, and net recognized revenue. |
-| `transaction_analytics.csv` | 200 | `analytics.fct_transactions` | `transaction_id` | Enriched commercial transactions with customer segment, account attributes, and daily ECB FX conversion to EUR (`transaction_amount_eur`). |
-| `revenue_by_segment.csv` | 6 | Aggregated from `analytics.fct_customer_revenue` | `(customer_segment, currency)` | Executive segment summary across `COMMERCIAL_SME`, `INSTITUTIONAL`, and `RETAIL_WEALTH` by native currency and EUR equivalent. |
+### Reproducing the DEV Showcase Dataset (`analytics_platform`)
+```bash
+# 1. Ingest synthetic DEV batch into PostgreSQL raw schema
+PYTHONPATH=packages/shared/src:packages/data_platform/src .venv/bin/uv run --env-file .env python -m data_platform.ingestion.run --profile DEV --reset
+
+# 2. Build dbt dimensional marts and execute all 462 data tests
+.venv/bin/uv run --env-file .env dbt build --project-dir packages/data_platform/dbt_analytics --profiles-dir /tmp/dbt_profiles --target dev
+
+# 3. Export fresh CSVs to sample_data/
+PYTHONPATH=packages/shared/src:packages/data_platform/src .venv/bin/uv run --env-file .env python -m data_platform.ingestion.export_samples
+```
+
+### Reproducing the TEST Profile Dataset (`analytics_platform_test`)
+```bash
+# 1. Integration tests automatically provision and populate analytics_platform_test:
+.venv/bin/uv run --env-file .env pytest -q
+
+# 2. (Optional) Build dbt models in the test database:
+.venv/bin/uv run --env-file .env dbt build --project-dir packages/data_platform/dbt_analytics --profiles-dir /tmp/dbt_profiles --target test
+```

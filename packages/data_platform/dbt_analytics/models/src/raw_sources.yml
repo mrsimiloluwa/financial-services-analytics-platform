@@ -6,7 +6,7 @@ sources:
       Governed PostgreSQL raw banking schema populated by the synthetic financial
       data generator and idempotent staging-to-raw ingestion pipeline (Phase 1 / M1.5).
       All monetary columns use exact NUMERIC(18, 4) precision and FX rates use NUMERIC(18, 6).
-    database: "{{ env_var('POSTGRES_DB', 'analytics_platform') }}"
+    database: "{{ target.dbname }}"
     schema: raw
     loaded_at_field: created_at
     freshness:

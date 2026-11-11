@@ -1,15 +1,15 @@
 # Financial Data Quality & Testing Framework
 
-Data quality in the **Enterprise AI Analytics Platform** is enforced through **461 automated dbt tests** combining schema-level generic assertions and 11 singular financial SQL invariant tests.
+Data quality in the **Enterprise AI Analytics Platform** is enforced through **462 automated dbt tests** combining schema-level generic assertions and 12 singular financial SQL invariant tests.
 
 ---
 
 ## 1. Execution Summary (`dbt build`)
 
-- **Total Nodes Executed:** 487 (26 models + 461 data tests)
+- **Total Nodes Executed:** 488 (26 models + 462 data tests)
 - **Generic Schema Tests:** 450 (`unique`, `not_null`, `relationships`, `accepted_values`)
-- **Singular Financial Invariant Tests:** 11
-- **Execution Result:** `PASS=487 WARN=0 ERROR=0 SKIP=0`
+- **Singular Financial Invariant Tests:** 12
+- **Execution Result:** `PASS=488 WARN=0 ERROR=0 SKIP=0`
 
 ---
 
@@ -24,6 +24,7 @@ Every singular test is written as a SQL query that returns violating rows. A ret
 | `assert_fee_assessment_decomposition.sql` | $\text{Gross Assessed} = \text{Waived} + \text{Net Collectible}$, with all components $\ge 0$. | `fct_fee_assessments` | `PASS` (0 violations) |
 | `assert_collection_attempt_balance.sql` | $\text{Target Amount} = \text{Collected Amount} + \text{Outstanding Amount}$, and `SETTLED` attempts have `outstanding_amount = 0.0000`. | `fct_fee_collections` | `PASS` (0 violations) |
 | `assert_no_assessment_overcollection.sql` | Cumulative `collected_amount` per assessment never exceeds `net_collectible_amount`, and $\text{Net Collectible} = \text{Collected} + \text{Outstanding}$. | `fct_fee_assessments` | `PASS` (0 violations) |
+| `assert_latest_collection_attributes_consistency.sql` | Assessment-level `latest_collection_id`, `latest_recognition_id`, `collection_status`, and `failure_reason` match the chronologically latest attempt (`ROW_NUMBER() OVER (PARTITION BY assessment_id ORDER BY attempted_at DESC, collection_attempt_number DESC, collection_id DESC)`) and latest recognition (`ROW_NUMBER() OVER (PARTITION BY collection_id ORDER BY recognized_at DESC, recognition_id DESC)`). | `fct_fee_assessments`, `fct_fee_collections`, `stg_revenue_recognitions` | `PASS` (0 violations) |
 | `assert_reversal_within_original_amount.sql` | Reversed revenue never exceeds gross collected revenue, and reversal ledger entries never exceed their original entry amount. | `stg_revenue_recognitions`, `fct_ledger_entries` | `PASS` (0 violations) |
 | `assert_failed_collections_zero_revenue.sql` | `FAILED` collection attempts never record positive collected cash, recognized revenue, or ledger postings. | `fct_fee_collections` | `PASS` (0 violations) |
 | `assert_fx_rate_spread_ordering.sql` | $0 < \text{Bid Rate} \le \text{Mid Rate} \le \text{Ask Rate}$, and identity currency pairs equal `1.000000`. | `stg_fx_rates` | `PASS` (0 violations) |

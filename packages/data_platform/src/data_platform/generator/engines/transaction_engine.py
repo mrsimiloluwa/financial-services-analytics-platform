@@ -148,10 +148,12 @@ class TransactionEngine:
             )
 
             # Status distribution: 92% SETTLED, 4% PENDING, 3% FAILED, 1% REVERSED
+            simulation_end_dt = datetime.combine(self.config.end_date, time(23, 59, 59), tzinfo=UTC)
             status_dice = self.rng.random()
             if status_dice < 0.92:
                 status = "SETTLED"
-                settled_at = initiated_at + timedelta(minutes=self.rng.randint(2, 60))
+                raw_settled = initiated_at + timedelta(minutes=self.rng.randint(2, 60))
+                settled_at = min(raw_settled, simulation_end_dt)
             elif status_dice < 0.96:
                 status = "PENDING"
                 settled_at = None
@@ -160,7 +162,8 @@ class TransactionEngine:
                 settled_at = None
             else:
                 status = "REVERSED"
-                settled_at = initiated_at + timedelta(minutes=15)
+                raw_settled = initiated_at + timedelta(minutes=15)
+                settled_at = min(raw_settled, simulation_end_dt)
 
             channel = self.rng.choice(self.TRANSACTION_CHANNELS[txn_type])
             # Direction: Card settlements and FX conversions are always customer DEBITs.

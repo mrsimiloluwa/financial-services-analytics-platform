@@ -1,3 +1,37 @@
+x-airflow-common: &airflow-common
+  image: custom-airflow:2.10.3
+  build:
+    context: ./docker/airflow
+    dockerfile: Dockerfile
+  environment:
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER:-analytics_user}:${POSTGRES_PASSWORD:-analytics_dev_password_change_me}@postgres:5432/airflow_metadata
+    AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW__CORE__FERNET_KEY:-46BKJoQYlPPOexq0OhDZnIlNepKFfDewikoUp2Q_3V8=}
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__CORE__LOAD_DEFAULT_CONNECTIONS: "false"
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "false"
+    AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "false"
+    AIRFLOW__LOGGING__LOGGING_LEVEL: INFO
+    AIRFLOW__CORE__DEFAULT_TIMEZONE: UTC
+    PYTHONPATH: /opt/airflow/project/packages/shared/src:/opt/airflow/project/packages/data_platform/src
+    PATH: /home/airflow/.local/bin:/usr/local/bin:/usr/bin:/bin
+    POSTGRES_HOST: postgres
+    POSTGRES_PORT: 5432
+    POSTGRES_USER: ${POSTGRES_USER:-analytics_user}
+    POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-analytics_dev_password_change_me}
+    POSTGRES_DB: ${POSTGRES_DB:-analytics_platform}
+    POSTGRES_TEST_DB: ${POSTGRES_TEST_DB:-analytics_platform_test}
+    AIRFLOW_UID: ${AIRFLOW_UID:-501}
+  volumes:
+    - ./airflow/dags:/opt/airflow/dags
+    - ./airflow/logs:/opt/airflow/logs
+    - ./airflow/plugins:/opt/airflow/plugins
+    - .:/opt/airflow/project
+  user: "${AIRFLOW_UID:-501}:0"
+  depends_on:
+    postgres:
+      condition: service_healthy
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -17,6 +51,156 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          memory: 128M
+
+  airflow-init:
+    <<: *airflow-common
+    container_name: analytics_platform_airflow_init
+    command: >
+      bash -c "airflow db migrate &&
+      airflow users create
+      --username $${AIRFLOW_ADMIN_USER:-admin}
+      --password $${AIRFLOW_ADMIN_PASSWORD:-admin}
+      --firstname Admin
+      --lastname User
+      --role Admin
+      --email admin@example.com || true"
+    restart: "no"
+
+  airflow-webserver:
+    <<: *airflow-common
+    container_name: analytics_platform_airflow_webserver
+    restart: unless-stopped
+    command: webserver
+    ports:
+      - "127.0.0.1:8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1G
+        reservations:
+          memory: 256M
+
+  airflow-scheduler:
+    <<: *airflow-common
+    container_name: analytics_platform_airflow_scheduler
+    restart: unless-stopped
+    command: scheduler
+    healthcheck:
+      test: ["CMD-SHELL", 'airflow jobs check --job-type SchedulerJob --hostname "$${HOSTNAME}"']
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1G
+        reservations:
+          memory: 256M
+
+  api:
+    image: custom-analytics-app:1.0.0
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+    container_name: analytics_platform_api
+    restart: unless-stopped
+    command: uvicorn ai_services.api.app:app --host 0.0.0.0 --port 8000
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-analytics_platform}
+      POSTGRES_TEST_DB: ${POSTGRES_TEST_DB:-analytics_platform_test}
+      POSTGRES_USER: ${POSTGRES_USER:-analytics_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-analytics_dev_password_change_me}
+      POSTGRES_READER_USER: ${POSTGRES_READER_USER:-analytics_reader}
+      POSTGRES_READER_PASSWORD: ${POSTGRES_READER_PASSWORD:-analytics_reader_secret}
+      API_BASE_URL: ${API_BASE_URL:-http://api:8000}
+      API_AUTH_ENABLED: ${API_AUTH_ENABLED:-false}
+      API_KEY: ${API_KEY:-}
+      LLM_PROVIDER: ${LLM_PROVIDER:-mock}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-mock-model}
+      LLM_BASE_URL: ${LLM_BASE_URL:-https://api.openai.com/v1}
+    ports:
+      - "127.0.0.1:8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    depends_on:
+      postgres:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          memory: 128M
+
+  dashboard:
+    image: custom-analytics-app:1.0.0
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+    container_name: analytics_platform_dashboard
+    restart: unless-stopped
+    command: streamlit run packages/data_apps/src/data_apps/app.py --server.port 8501 --server.address 0.0.0.0
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-analytics_platform}
+      POSTGRES_TEST_DB: ${POSTGRES_TEST_DB:-analytics_platform_test}
+      POSTGRES_USER: ${POSTGRES_USER:-analytics_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-analytics_dev_password_change_me}
+      POSTGRES_READER_USER: ${POSTGRES_READER_USER:-analytics_reader}
+      POSTGRES_READER_PASSWORD: ${POSTGRES_READER_PASSWORD:-analytics_reader_secret}
+      API_BASE_URL: ${API_BASE_URL:-http://api:8000}
+      API_AUTH_ENABLED: ${API_AUTH_ENABLED:-false}
+      API_KEY: ${API_KEY:-}
+      LLM_PROVIDER: ${LLM_PROVIDER:-mock}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-mock-model}
+      LLM_BASE_URL: ${LLM_BASE_URL:-https://api.openai.com/v1}
+    ports:
+      - "127.0.0.1:8501:8501"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8501/_stcore/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    depends_on:
+      postgres:
+        condition: service_healthy
     deploy:
       resources:
         limits:

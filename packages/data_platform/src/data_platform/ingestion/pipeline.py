@@ -28,6 +28,10 @@ class IngestionPipeline:
         """Execute transactional staged COPY, validation, merge, manifest logging, and reconciliation."""
         init_database_schemas(self.conn)
 
+        # 0. Record initial batch manifest with status STARTED
+        self._record_manifest(batch_data, status="STARTED")
+        self.conn.commit()
+
         try:
             # 1. Truncate staging tables before copy
             truncate_staging_tables(self.conn)
@@ -35,19 +39,29 @@ class IngestionPipeline:
             # 2. Fast Batch COPY into unlogged staging tables
             self._copy_to_staging(batch_data)
 
-            # 3. Transactional Merge from Staging to Raw
+            # 3. Detect any conflicting duplicate business keys
+            conflicts = self._detect_conflicts()
+            if conflicts:
+                import logging
+
+                logging.getLogger("data_platform.ingestion").warning(
+                    "Detected conflicting business keys with differing financial attributes: %s",
+                    conflicts,
+                )
+
+            # 4. Transactional Merge from Staging to Raw
             self._merge_staging_to_raw()
 
-            # 4. Record Ingestion Batch Manifest
-            self._record_manifest(batch_data)
+            # 5. Update batch manifest to COMPLETED
+            self._record_manifest(batch_data, status="COMPLETED")
 
             # Commit the transaction atomically
             self.conn.commit()
 
-            # 5. Clean up staging tables after commit
+            # 6. Clean up staging tables after commit
             truncate_staging_tables(self.conn)
 
-            # 6. Post-Ingestion Data Quality & Accounting Reconciliation
+            # 7. Post-Ingestion Data Quality & Accounting Reconciliation
             if run_reconciliation:
                 reconciler = DataReconciler(self.conn)
                 report = reconciler.run_reconciliation(str(batch_data.manifest.batch_id))
@@ -60,6 +74,11 @@ class IngestionPipeline:
 
         except Exception as exc:
             self.conn.rollback()
+            try:
+                self._record_manifest(batch_data, status="FAILED")
+                self.conn.commit()
+            except Exception:
+                pass
             raise RuntimeError(
                 f"Ingestion batch {batch_data.manifest.batch_id} failed and was rolled back: {exc}"
             ) from exc
@@ -261,8 +280,39 @@ class IngestionPipeline:
         with self.conn.cursor() as cur:
             cur.execute(merge_sql)
 
-    def _record_manifest(self, data: GeneratedBatchData) -> None:
-        """Insert batch audit manifest record."""
+    def _detect_conflicts(self) -> dict[str, int]:
+        """Detect duplicate business keys in staging with conflicting financial values against raw."""
+        conflicts: dict[str, int] = {}
+        with self.conn.cursor() as cur:
+            # Check transaction conflicts: matching ID but differing financial amounts
+            cur.execute("""
+                SELECT COUNT(*)
+                FROM staging.transactions s
+                JOIN raw.transactions r ON s.transaction_id = r.transaction_id
+                WHERE s.transaction_amount <> r.transaction_amount
+                   OR s.transaction_currency <> r.transaction_currency
+                   OR s.account_id <> r.account_id;
+            """)
+            txn_conflicts = cur.fetchone()[0]
+            if txn_conflicts > 0:
+                conflicts["conflicting_transactions"] = txn_conflicts
+
+            # Check fee assessment conflicts
+            cur.execute("""
+                SELECT COUNT(*)
+                FROM staging.fee_assessments s
+                JOIN raw.fee_assessments r ON s.assessment_id = r.assessment_id
+                WHERE s.gross_assessed_amount <> r.gross_assessed_amount
+                   OR s.net_collectible_amount <> r.net_collectible_amount;
+            """)
+            fee_conflicts = cur.fetchone()[0]
+            if fee_conflicts > 0:
+                conflicts["conflicting_fee_assessments"] = fee_conflicts
+
+        return conflicts
+
+    def _record_manifest(self, data: GeneratedBatchData, status: str = "COMPLETED") -> None:
+        """Insert or update batch audit manifest record."""
         m = data.manifest
         with self.conn.cursor() as cur:
             cur.execute(
@@ -272,7 +322,9 @@ class IngestionPipeline:
                     reporting_base_currency, total_records, entity_counts,
                     started_at, completed_at, status
                 ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                ON CONFLICT (batch_id) DO NOTHING;
+                ON CONFLICT (batch_id) DO UPDATE SET
+                    status = EXCLUDED.status,
+                    completed_at = EXCLUDED.completed_at;
                 """,
                 (
                     m.batch_id,
@@ -283,7 +335,7 @@ class IngestionPipeline:
                     m.total_records,
                     json.dumps(m.entity_counts),
                     m.started_at,
-                    m.completed_at,
-                    m.status,
+                    m.completed_at if status == "COMPLETED" else None,
+                    status,
                 ),
             )

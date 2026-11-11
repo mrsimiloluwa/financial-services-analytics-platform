@@ -125,10 +125,11 @@ class SyntheticDataGenerator:
             cust = customer_map.get(src_acc.customer_id)
             seg = cust.customer_segment if cust else None
 
-            # Apply waivers: 10% of transactions receive promotional/tier waiver
+            # Apply waivers: 10% of transactions receive promotional/tier waiver deterministically
             waiver_pct = Decimal("0.0000")
             reason: str | None = None
-            if (hash(txn.transaction_id) % 10) == 0:
+            txn_int = int(txn.transaction_id.split("_")[-1]) if "_" in txn.transaction_id else 0
+            if (txn_int % 10) == 0:
                 waiver_pct = Decimal("0.1500")
                 reason = "VOLUME_TIER_CONCESSION"
 
@@ -144,7 +145,7 @@ class SyntheticDataGenerator:
             fee_assessments.append(assessment)
 
             # Attempt collection sweep (occasional failure e.g. 5% failure rate for test realism)
-            force_fail = (hash(txn.transaction_id) % 20) == 0
+            force_fail = (txn_int % 20) == 0
             fail_reason = "INSUFFICIENT_FUNDS" if force_fail else None
 
             # Assume 5% network pass-through cost

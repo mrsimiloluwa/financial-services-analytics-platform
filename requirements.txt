@@ -1,0 +1,17 @@
+# Streamlit Community Cloud Requirements
+# Standalone execution with embedded DuckDB marts and deterministic mock AI engine
+
+duckdb>=1.1.0
+fastapi>=0.115.0
+httpx>=0.27.0
+langgraph>=0.2.0
+pandas>=2.2.0
+plotly>=5.24.0
+psycopg[binary]>=3.2.0
+pydantic>=2.9.0
+pydantic-settings>=2.5.0
+python-dotenv>=1.0.0
+pyyaml>=6.0.0
+sqlglot>=25.0.0
+streamlit>=1.40.0
+uvicorn>=0.32.0
