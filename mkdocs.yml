@@ -57,19 +57,43 @@ markdown_extensions:
 
 nav:
   - Overview: index.md
+  - Portfolio Guide: portfolio/walkthrough.md
   - Architecture:
       - System Design: architecture/overview.md
       - Ingestion Pipeline: architecture/ingestion-pipeline.md
+      - Pipeline Orchestration: architecture/airflow-orchestration.md
+      - Metadata Catalog Architecture: architecture/metadata-catalog.md
+      - Data Lineage Architecture: architecture/data-lineage.md
+      - AI Analytics Architecture: architecture/ai-analytics.md
+      - Application Engineering Architecture: architecture/application-architecture.md
+      - SQL Security & Boundary Defense: architecture/sql-security.md
       - "ADR 001: Foundations & Architecture": architecture/adr-001-monorepo-foundations.md
   - Analytics Engineering:
       - dbt Model Reference: technical/analytics/dbt-model-reference.md
       - Governed Metric Catalogue: technical/analytics/metric-catalogue.md
+      - Governed Financial Metric Registry (Phase 4): technical/analytics/financial-metric-catalogue.md
+      - Data Classification & Security: technical/analytics/data-classification.md
       - Data Lineage & Star Schema: technical/analytics/data-lineage.md
       - Financial Data Quality & Tests: technical/analytics/data-quality.md
+  - AI & Applications:
+      - LLM Integration & Providers: technical/ai/llm-integration.md
+      - Evaluation Framework & Benchmarks: technical/ai/evaluation-framework.md
   - Phases & Changelog:
       - "Phase 0: Foundations & Standards": phases/phase-0-foundations.md
       - "Phase 1: Financial Data & Accounting Engine": phases/phase-1-generation.md
       - "Milestone 1.5: PostgreSQL Ingestion": phases/phase-1-ingestion.md
       - "Phase 2: dbt Analytics Engineering": phases/phase-2-dbt-analytics.md
+      - "Phase 3: Airflow Data Pipeline Orchestration": phases/phase-3-airflow.md
+      - "Phase 4: Metadata & Governed Financial Catalog": phases/phase-4-metadata-governance.md
+      - "Phase 4.1: Financial Integrity & Governance Audit": phases/phase-4.1-audit.md
+      - "Phase 5: Governed AI Financial Analytics": phases/phase-5-ai-analytics.md
+      - "Phase 6: Application Engineering & Productisation": phases/phase-6-application.md
+      - "Phase 7: Production Readiness & Portfolio Deployment": phases/phase-7-production.md
+      - "Phase 8: Public Deployment & Portfolio Launch": phases/phase-8-deployment.md
   - Runbooks:
       - Local Setup & Operations: runbooks/setup.md
+      - Production Deployment: runbooks/deployment.md
+      - Airflow Operations: runbooks/airflow.md
+      - Metadata Catalog Operations: runbooks/metadata.md
+      - AI Analytics & Data Apps Operations: runbooks/ai-analytics.md
+      - Application Operations: runbooks/application.md

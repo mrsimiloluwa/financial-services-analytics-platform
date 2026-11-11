@@ -11,6 +11,15 @@ dependencies = [
     "pydantic-settings>=2.5.0",
     "dbt-core>=1.8.0",
     "dbt-postgres>=1.8.0",
+    "fastapi>=0.115.0",
+    "uvicorn>=0.32.0",
+    "httpx>=0.27.0",
+    "langgraph>=0.2.0",
+    "pandas>=2.2.0",
+    "plotly>=5.24.0",
+    "pyyaml>=6.0.0",
+    "sqlglot>=25.0.0",
+    "streamlit>=1.40.0",
 ]
 
 [dependency-groups]
@@ -43,6 +52,9 @@ ignore = [
     "E501",  # line length handled by ruff-format
 ]
 
+[tool.ruff.lint.per-file-ignores]
+"packages/data_apps/src/data_apps/app.py" = ["E402"]
+
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
@@ -51,7 +63,7 @@ line-ending = "auto"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["packages/shared/src", "packages/data_platform/src"]
+pythonpath = ["packages/shared/src", "packages/data_platform/src", "packages/ai_services/src", "packages/data_apps/src"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]

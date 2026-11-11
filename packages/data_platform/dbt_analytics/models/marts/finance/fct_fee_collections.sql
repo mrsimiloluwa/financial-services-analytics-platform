@@ -48,17 +48,47 @@ transactions_context as (
     from {{ ref('int_transactions_enriched') }}
 ),
 
+recognitions_agg as (
+    -- Pure financial aggregation by collection_id (1:0..1 enforced by unique_stg_revenue_recognitions_collection_id)
+    select
+        collection_id,
+        sum(gross_collected_revenue) as gross_collected_revenue,
+        sum(reversed_revenue_amount) as reversed_revenue_amount,
+        sum(pass_through_cost) as pass_through_cost,
+        sum(net_recognized_revenue) as net_recognized_revenue,
+        max(recognized_at) as recognized_at,
+        max(recognized_date) as recognized_date
+    from {{ ref('stg_revenue_recognitions') }}
+    group by collection_id
+),
+
+ranked_recognitions as (
+    select
+        collection_id,
+        recognition_id,
+        row_number() over (
+            partition by collection_id
+            order by
+                recognized_at desc,
+                recognition_id desc
+        ) as recognition_rank_desc
+    from {{ ref('stg_revenue_recognitions') }}
+),
+
 recognitions as (
     select
-        recognition_id,
-        collection_id,
-        gross_collected_revenue,
-        reversed_revenue_amount,
-        pass_through_cost,
-        net_recognized_revenue,
-        recognized_at,
-        recognized_date
-    from {{ ref('stg_revenue_recognitions') }}
+        ra.collection_id,
+        rr.recognition_id,
+        ra.gross_collected_revenue,
+        ra.reversed_revenue_amount,
+        ra.pass_through_cost,
+        ra.net_recognized_revenue,
+        ra.recognized_at,
+        ra.recognized_date
+    from recognitions_agg ra
+    left join ranked_recognitions rr
+        on ra.collection_id = rr.collection_id
+        and rr.recognition_rank_desc = 1
 ),
 
 fx_to_eur as (
