@@ -20,20 +20,13 @@ for _pkg in ["shared", "data_platform", "ai_services", "data_apps"]:
     if _pkg_src.exists() and str(_pkg_src) not in sys.path:
         sys.path.insert(0, str(_pkg_src))
 
-# Auto-default to embedded DuckDB if no external PostgreSQL database is configured or listening
-if "DATABASE_BACKEND" not in os.environ and (
-    "POSTGRES_HOST" not in os.environ
-    or os.environ.get("POSTGRES_HOST") in ("localhost", "127.0.0.1", "")
+# Standalone cloud deployment: Streamlit Cloud runs serverless with no local PostgreSQL.
+# If no external PostgreSQL host is configured, default immediately to embedded DuckDB.
+if (
+    os.environ.get("POSTGRES_HOST") in (None, "", "localhost", "127.0.0.1")
+    and os.environ.get("DATABASE_BACKEND") != "postgres"
 ):
-    import socket
-
-    try:
-        with socket.create_connection(
-            ("127.0.0.1", int(os.environ.get("POSTGRES_PORT", 5432))), timeout=0.15
-        ):
-            pass
-    except OSError:
-        os.environ["DATABASE_BACKEND"] = "duckdb"
+    os.environ["DATABASE_BACKEND"] = "duckdb"
 
 import httpx
 import pandas as pd
@@ -120,7 +113,7 @@ def load_catalog_data():
 
 
 @st.cache_data(ttl=30)
-def load_overview_data(use_test_db: bool) -> FinancialOverviewResponse | None:
+def load_overview_data(use_test_db: bool) -> tuple[FinancialOverviewResponse | None, str | None]:
     """Load executive financial overview metrics dynamically from REST API or warehouse."""
     base_url, headers = get_backend_client()
     target_env = "test" if use_test_db else "dev"
@@ -132,15 +125,15 @@ def load_overview_data(use_test_db: bool) -> FinancialOverviewResponse | None:
                     headers=headers,
                 )
                 if resp.status_code == 200:
-                    return FinancialOverviewResponse.model_validate(resp.json())
+                    return FinancialOverviewResponse.model_validate(resp.json()), None
         except Exception as exc:
             logger.warning("API call failed for overview, falling back: %s", exc)
 
     try:
-        return AnalyticsDataService.get_financial_overview(use_test_db=use_test_db)
+        return AnalyticsDataService.get_financial_overview(use_test_db=use_test_db), None
     except Exception as exc:
-        logger.error("Failed loading overview metrics: %s", exc)
-        return None
+        logger.exception("Failed loading overview metrics: %s", exc)
+        return None, str(exc)
 
 
 @st.cache_data(ttl=30)
@@ -308,7 +301,7 @@ def main():
         ]
     )
 
-    overview_data = load_overview_data(use_test_db)
+    overview_data, overview_err = load_overview_data(use_test_db)
 
     # -------------------------------------------------------------
     # TAB 1: Executive Overview & Financial KPIs
@@ -437,6 +430,11 @@ def main():
                     )
         else:
             st.error("Could not retrieve executive overview metrics from analytical warehouse.")
+            if overview_err:
+                st.warning(f"Diagnostic error details: `{overview_err}`")
+            if st.button("🔄 Reload Data / Reset Cache", key="reload_overview_btn"):
+                st.cache_data.clear()
+                st.rerun()
 
     # -------------------------------------------------------------
     # TAB 2: Customer Revenue & Rankings

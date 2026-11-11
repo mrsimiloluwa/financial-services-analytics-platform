@@ -24,11 +24,40 @@ _TEST_DUCKDB_CON: duckdb.DuckDBPyConnection | None = None
 
 def _find_repo_root() -> Path:
     """Locate repository root directory containing sample_data/."""
-    current = Path(__file__).resolve().parent
-    for _ in range(5):
-        if (current / "sample_data").exists():
-            return current
-        current = current.parent
+    # 1. Search up from duckdb_reader.py file location (all parents)
+    file_path = Path(__file__).resolve()
+    for parent in [file_path.parent, *file_path.parents]:
+        sample_dir = parent / "sample_data"
+        if sample_dir.is_dir() and (sample_dir / "dim_customers.csv").exists():
+            return parent
+
+    # 2. Search up from current working directory (all parents)
+    cwd = Path.cwd().resolve()
+    for parent in [cwd, *cwd.parents]:
+        sample_dir = parent / "sample_data"
+        if sample_dir.is_dir() and (sample_dir / "dim_customers.csv").exists():
+            return parent
+
+    # 3. Search up from sys.path entries
+    import sys
+
+    for entry in sys.path:
+        try:
+            p = Path(entry).resolve()
+            for parent in [p, *p.parents]:
+                sample_dir = parent / "sample_data"
+                if sample_dir.is_dir() and (sample_dir / "dim_customers.csv").exists():
+                    return parent
+        except Exception:
+            continue
+
+    # 4. Check common Streamlit Cloud mount directories
+    for mount in [Path("/mount/src"), Path("/app"), Path("/workspace")]:
+        if mount.exists():
+            for child in mount.glob("**/sample_data"):
+                if child.is_dir() and (child / "dim_customers.csv").exists():
+                    return child.parent
+
     # Fallback to current working directory
     return Path.cwd()
 
