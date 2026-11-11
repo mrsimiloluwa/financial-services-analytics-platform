@@ -1,0 +1,81 @@
+{
+  "manifest": {
+    "batch_id": "90b0a281-bad8-4608-bbf7-6974b0794863",
+    "generator_version": "1.0.0",
+    "seed": 42,
+    "profile": "DEV",
+    "total_records": 49462,
+    "entity_counts": {
+      "accounts": 111,
+      "fx_rates": 5840,
+      "journals": 8250,
+      "customers": 50,
+      "gl_accounts": 14,
+      "transactions": 5000,
+      "ledger_entries": 18975,
+      "fee_assessments": 3790,
+      "fee_collections": 3790,
+      "overdraft_facilities": 74,
+      "revenue_recognitions": 3568
+    },
+    "status": "COMPLETED"
+  },
+  "leakage_sample": [
+    {
+      "transaction_type": "WIRE_TRANSFER",
+      "waiver_reason": "VOLUME_TIER_CONCESSION",
+      "count": 157,
+      "gross": "31533.7835",
+      "waived": "4730.0672",
+      "net": "26803.7163"
+    },
+    {
+      "transaction_type": "CARD_SETTLEMENT",
+      "waiver_reason": "VOLUME_TIER_CONCESSION",
+      "count": 97,
+      "gross": "19232.5880",
+      "waived": "2884.8882",
+      "net": "16347.6998"
+    },
+    {
+      "transaction_type": "ACH_PAYMENT",
+      "waiver_reason": "VOLUME_TIER_CONCESSION",
+      "count": 154,
+      "gross": "77.0000",
+      "waived": "11.5500",
+      "net": "65.4500"
+    },
+    {
+      "transaction_type": "CARD_SETTLEMENT",
+      "waiver_reason": "NONE",
+      "count": 806,
+      "gross": "179324.5840",
+      "waived": "0.0000",
+      "net": "179324.5840"
+    },
+    {
+      "transaction_type": "WIRE_TRANSFER",
+      "waiver_reason": "NONE",
+      "count": 1260,
+      "gross": "233773.9395",
+      "waived": "0.0000",
+      "net": "233773.9395"
+    }
+  ],
+  "collection_performance": [
+    {
+      "status": "SETTLED",
+      "count": 3568,
+      "target": "433171.9675",
+      "collected": "433171.9675",
+      "outstanding": "0.0000"
+    },
+    {
+      "status": "FAILED",
+      "count": 222,
+      "target": "23801.4221",
+      "collected": "0.0000",
+      "outstanding": "23801.4221"
+    }
+  ]
+}

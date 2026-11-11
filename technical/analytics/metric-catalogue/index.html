@@ -1,0 +1,2391 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Production-grade Financial Analytics and AI Platform Documentation">
+      
+      
+        <meta name="author" content="Lead Data & AI Architect">
+      
+      
+      
+        <link rel="prev" href="../dbt-model-reference/">
+      
+      
+        <link rel="next" href="../financial-metric-catalogue/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Governed Metric Catalogue - Enterprise AI Analytics Platform</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#governed-financial-metric-catalogue" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Enterprise AI Analytics Platform" class="md-header__button md-logo" aria-label="Enterprise AI Analytics Platform" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Enterprise AI Analytics Platform
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Governed Metric Catalogue
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="light-blue"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/mrsimiloluwa/test" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    mrsimiloluwa/test
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Overview
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../portfolio/walkthrough/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture Walkthrough
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../architecture/overview/" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../dbt-model-reference/" class="md-tabs__link">
+          
+  
+  
+  Analytics Engineering
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../ai/llm-integration/" class="md-tabs__link">
+          
+  
+  
+  AI & Applications
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../phases/phase-0-foundations/" class="md-tabs__link">
+          
+  
+  
+  Phases & Changelog
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../runbooks/setup/" class="md-tabs__link">
+          
+  
+  
+  Runbooks
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Enterprise AI Analytics Platform" class="md-nav__button md-logo" aria-label="Enterprise AI Analytics Platform" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Enterprise AI Analytics Platform
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/mrsimiloluwa/test" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    mrsimiloluwa/test
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../portfolio/walkthrough/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Walkthrough
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../architecture/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../architecture/ingestion-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ingestion Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../architecture/airflow-orchestration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline Orchestration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../architecture/metadata-catalog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metadata Catalog Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../architecture/data-lineage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Lineage Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../architecture/ai-analytics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Analytics Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../architecture/application-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Engineering Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../architecture/sql-security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SQL Security & Boundary Defense
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../architecture/adr-001-monorepo-foundations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR 001: Foundations & Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analytics Engineering
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Analytics Engineering
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dbt-model-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    dbt Model Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Governed Metric Catalogue
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Governed Metric Catalogue
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#summary-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary Matrix
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#detailed-metric-specifications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Detailed Metric Specifications
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Detailed Metric Specifications">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-gross-assessed-fees-met-01" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Gross Assessed Fees (MET-01)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-waived-fees-met-02" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Waived Fees (MET-02)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-net-collectible-fees-met-03" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Net Collectible Fees (MET-03)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-collected-fees-met-04" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Collected Fees (MET-04)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-outstanding-fees-uncollected-arrears-met-05" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Outstanding Fees / Uncollected Arrears (MET-05)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-reversed-fee-revenue-met-06" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Reversed Fee Revenue (MET-06)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-net-recognised-revenue-met-08" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Net Recognised Revenue (MET-08)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-transaction-volume-met-09-value-met-10-and-average-value-met-11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Transaction Volume (MET-09), Value (MET-10), and Average Value (MET-11)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#9-fee-collection-rate-met-13-and-fee-leakage-indicators-met-14-met-15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Fee Collection Rate (MET-13) and Fee Leakage Indicators (MET-14, MET-15)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../financial-metric-catalogue/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Governed Financial Metric Registry (Phase 4)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data-classification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Classification & Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data-lineage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Lineage & Star Schema
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data-quality/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Financial Data Quality & Tests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI & Applications
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    AI & Applications
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ai/llm-integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM Integration & Providers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ai/evaluation-framework/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evaluation Framework & Benchmarks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phases & Changelog
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Phases & Changelog
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../phases/phase-0-foundations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase 0: Foundations & Standards
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../phases/phase-1-generation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase 1: Financial Data & Accounting Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../phases/phase-1-ingestion/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Milestone 1.5: PostgreSQL Ingestion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../phases/phase-2-dbt-analytics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase 2: dbt Analytics Engineering
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../phases/phase-3-airflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase 3: Airflow Data Pipeline Orchestration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../phases/phase-4-metadata-governance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase 4: Metadata & Governed Financial Catalog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../phases/phase-4.1-audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase 4.1: Financial Integrity & Governance Audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../phases/phase-5-ai-analytics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase 5: Governed AI Financial Analytics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../phases/phase-6-application/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase 6: Application Engineering & Productisation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../phases/phase-7-production/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase 7: Production Readiness & Portfolio Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../phases/phase-8-deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase 8: Public Deployment & Portfolio Launch
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runbooks
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Runbooks
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local Setup & Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Production Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/airflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Airflow Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/metadata/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metadata Catalog Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/ai-analytics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Analytics & Data Apps Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/application/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#summary-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary Matrix
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#detailed-metric-specifications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Detailed Metric Specifications
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Detailed Metric Specifications">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-gross-assessed-fees-met-01" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Gross Assessed Fees (MET-01)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-waived-fees-met-02" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Waived Fees (MET-02)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-net-collectible-fees-met-03" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Net Collectible Fees (MET-03)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-collected-fees-met-04" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Collected Fees (MET-04)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-outstanding-fees-uncollected-arrears-met-05" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Outstanding Fees / Uncollected Arrears (MET-05)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-reversed-fee-revenue-met-06" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Reversed Fee Revenue (MET-06)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-net-recognised-revenue-met-08" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Net Recognised Revenue (MET-08)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-transaction-volume-met-09-value-met-10-and-average-value-met-11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Transaction Volume (MET-09), Value (MET-10), and Average Value (MET-11)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#9-fee-collection-rate-met-13-and-fee-leakage-indicators-met-14-met-15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Fee Collection Rate (MET-13) and Fee Leakage Indicators (MET-14, MET-15)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="governed-financial-metric-catalogue">Governed Financial Metric Catalogue</h1>
+<p>This catalogue establishes the single source of truth for financial, fee lifecycle, and commercial transaction metrics across the <strong>Enterprise AI Analytics Platform</strong>.</p>
+<blockquote>
+<p>[!IMPORTANT]
+<strong>Governance Rules</strong>
+1. <strong>Currency Integrity:</strong> Native currency amounts (<code>EUR</code>, <code>USD</code>, <code>GBP</code>, <code>CHF</code>) are <strong>never</strong> summed across different currencies. Multi-currency aggregations must either group by <code>currency</code> or sum the explicitly converted <code>*_eur</code> columns.
+2. <strong>Fee Lifecycle Separation:</strong> Gross assessed fees, waived fees, net collectible fees, collected fees, outstanding arrears, reversed revenue, pass-through costs, and net recognized revenue are distinct financial concepts and must never be treated as interchangeable.
+3. <strong>AI SQL Boundary:</strong> Downstream AI agents and analytical applications must reference these governed definitions and mart models rather than redefining calculations ad hoc.</p>
+</blockquote>
+<hr />
+<h2 id="summary-matrix">Summary Matrix</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Metric ID</th>
+<th style="text-align: left;">Metric Name</th>
+<th style="text-align: left;">Primary Source Model</th>
+<th style="text-align: left;">Native Formula</th>
+<th style="text-align: left;">EUR Reporting Column</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>MET-01</code></td>
+<td style="text-align: left;"><strong>Gross Assessed Fees</strong></td>
+<td style="text-align: left;"><code>analytics.fct_fee_assessments</code></td>
+<td style="text-align: left;"><code>SUM(gross_assessed_amount)</code></td>
+<td style="text-align: left;"><code>SUM(gross_assessed_amount_eur)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>MET-02</code></td>
+<td style="text-align: left;"><strong>Waived Fees</strong></td>
+<td style="text-align: left;"><code>analytics.fct_fee_assessments</code></td>
+<td style="text-align: left;"><code>SUM(waived_amount)</code></td>
+<td style="text-align: left;"><code>SUM(waived_amount_eur)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>MET-03</code></td>
+<td style="text-align: left;"><strong>Net Collectible Fees</strong></td>
+<td style="text-align: left;"><code>analytics.fct_fee_assessments</code></td>
+<td style="text-align: left;"><code>SUM(net_collectible_amount)</code></td>
+<td style="text-align: left;"><code>SUM(net_collectible_amount_eur)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>MET-04</code></td>
+<td style="text-align: left;"><strong>Collected Fees</strong></td>
+<td style="text-align: left;"><code>analytics.fct_fee_assessments</code></td>
+<td style="text-align: left;"><code>SUM(collected_amount)</code></td>
+<td style="text-align: left;"><code>SUM(collected_amount_eur)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>MET-05</code></td>
+<td style="text-align: left;"><strong>Outstanding Fees (Arrears)</strong></td>
+<td style="text-align: left;"><code>analytics.fct_fee_assessments</code></td>
+<td style="text-align: left;"><code>SUM(outstanding_amount)</code></td>
+<td style="text-align: left;"><code>SUM(outstanding_amount_eur)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>MET-06</code></td>
+<td style="text-align: left;"><strong>Reversed Fee Revenue</strong></td>
+<td style="text-align: left;"><code>analytics.fct_fee_assessments</code></td>
+<td style="text-align: left;"><code>SUM(reversed_amount)</code></td>
+<td style="text-align: left;"><code>SUM(reversed_amount_eur)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>MET-07</code></td>
+<td style="text-align: left;"><strong>Pass-Through Costs</strong></td>
+<td style="text-align: left;"><code>analytics.fct_fee_assessments</code></td>
+<td style="text-align: left;"><code>SUM(pass_through_cost)</code></td>
+<td style="text-align: left;"><code>SUM(pass_through_cost_eur)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>MET-08</code></td>
+<td style="text-align: left;"><strong>Net Recognised Revenue</strong></td>
+<td style="text-align: left;"><code>analytics.fct_customer_revenue</code></td>
+<td style="text-align: left;"><code>SUM(net_recognized_revenue)</code></td>
+<td style="text-align: left;"><code>SUM(net_recognized_revenue_eur)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>MET-09</code></td>
+<td style="text-align: left;"><strong>Eligible Transaction Volume</strong></td>
+<td style="text-align: left;"><code>analytics.fct_transactions</code></td>
+<td style="text-align: left;"><code>COUNT(transaction_id)</code> (<code>SETTLED</code>)</td>
+<td style="text-align: left;">N/A (Count)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>MET-10</code></td>
+<td style="text-align: left;"><strong>Settled Transaction Value</strong></td>
+<td style="text-align: left;"><code>analytics.fct_transactions</code></td>
+<td style="text-align: left;"><code>SUM(transaction_amount)</code></td>
+<td style="text-align: left;"><code>SUM(transaction_amount_eur)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>MET-11</code></td>
+<td style="text-align: left;"><strong>Average Transaction Value</strong></td>
+<td style="text-align: left;"><code>analytics.fct_transactions</code></td>
+<td style="text-align: left;"><code>AVG(transaction_amount)</code></td>
+<td style="text-align: left;"><code>AVG(transaction_amount_eur)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>MET-12</code></td>
+<td style="text-align: left;"><strong>Average Fee per Transaction</strong></td>
+<td style="text-align: left;"><code>analytics.fct_fee_assessments</code></td>
+<td style="text-align: left;"><code>SUM(gross_assessed_amount) / COUNT(assessment_id)</code></td>
+<td style="text-align: left;"><code>SUM(gross_assessed_amount_eur) / COUNT(assessment_id)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>MET-13</code></td>
+<td style="text-align: left;"><strong>Fee Collection Rate</strong></td>
+<td style="text-align: left;"><code>analytics.fct_customer_revenue</code></td>
+<td style="text-align: left;"><code>SUM(collected_fee_amount) / NULLIF(SUM(net_collectible_fee_amount), 0)</code></td>
+<td style="text-align: left;">Ratio (Currency-Invariant per Currency)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>MET-14</code></td>
+<td style="text-align: left;"><strong>Fee Waiver Rate</strong></td>
+<td style="text-align: left;"><code>analytics.fct_customer_revenue</code></td>
+<td style="text-align: left;"><code>SUM(waived_fee_amount) / NULLIF(SUM(gross_assessed_fee_amount), 0)</code></td>
+<td style="text-align: left;">Ratio</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>MET-15</code></td>
+<td style="text-align: left;"><strong>Total Fee Leakage Rate</strong></td>
+<td style="text-align: left;"><code>analytics.fct_customer_revenue</code></td>
+<td style="text-align: left;"><code>SUM(waived_fee_amount + outstanding_fee_amount) / NULLIF(SUM(gross_assessed_fee_amount), 0)</code></td>
+<td style="text-align: left;">Ratio</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>MET-16</code></td>
+<td style="text-align: left;"><strong>Customer Net Revenue</strong></td>
+<td style="text-align: left;"><code>analytics.fct_customer_revenue</code></td>
+<td style="text-align: left;"><code>SUM(net_recognized_revenue)</code> grouped by <code>customer_id, currency</code></td>
+<td style="text-align: left;"><code>SUM(net_recognized_revenue_eur)</code> grouped by <code>customer_id</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>MET-17</code></td>
+<td style="text-align: left;"><strong>Revenue by Segment</strong></td>
+<td style="text-align: left;"><code>analytics.fct_customer_revenue</code></td>
+<td style="text-align: left;"><code>SUM(net_recognized_revenue)</code> grouped by <code>customer_segment, currency</code></td>
+<td style="text-align: left;"><code>SUM(net_recognized_revenue_eur)</code> grouped by <code>customer_segment</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>MET-18</code></td>
+<td style="text-align: left;"><strong>Revenue by Transaction Type</strong></td>
+<td style="text-align: left;"><code>analytics.fct_customer_revenue</code></td>
+<td style="text-align: left;"><code>SUM(net_recognized_revenue)</code> grouped by <code>revenue_category, currency</code></td>
+<td style="text-align: left;"><code>SUM(net_recognized_revenue_eur)</code> grouped by <code>revenue_category</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="detailed-metric-specifications">Detailed Metric Specifications</h2>
+<h3 id="1-gross-assessed-fees-met-01">1. Gross Assessed Fees (<code>MET-01</code>)</h3>
+<ul>
+<li><strong>Business Definition:</strong> Total contractual fees evaluated on eligible settled transactions before applying commercial or tier-based fee waivers.</li>
+<li><strong>Exact Formula:</strong> <code>SUM(gross_assessed_amount)</code> by <code>currency</code>, or <code>SUM(gross_assessed_amount_eur)</code> in EUR reporting currency.</li>
+<li><strong>Source Model:</strong> <code>analytics.fct_fee_assessments</code> (or <code>analytics.fct_customer_revenue</code>).</li>
+<li><strong>Grain:</strong> Assessment level (<code>assessment_id</code>) or monthly customer-category grain (<code>customer_revenue_id</code>).</li>
+<li><strong>Currency Treatment:</strong> Evaluated in the account/transaction native currency (<code>EUR</code>, <code>USD</code>, <code>GBP</code>, <code>CHF</code>). Converted to <code>EUR</code> using the daily <code>ECB_SYNTH</code> mid-rate on <code>assessed_date</code>.</li>
+<li><strong>Date Field Used:</strong> <code>assessed_date</code> (or <code>reporting_month</code>).</li>
+<li><strong>Treatment of Failed/Pending Transactions:</strong> Excluded (<code>FAILED</code> and <code>PENDING</code> transactions do not trigger fee assessments).</li>
+<li><strong>Treatment of Waivers:</strong> Included prior to deduction (<code>gross_assessed_amount = waived_amount + net_collectible_amount</code>).</li>
+<li><strong>Treatment of Partial Collections &amp; Reversals:</strong> Unaffected; reflects initial contractual fee calculation.</li>
+<li><strong>Known Limitations:</strong> Synthetic pricing schedules evaluate flat base fees plus basis points in native currency without multi-tier monthly retro-rebates.</li>
+</ul>
+<h3 id="2-waived-fees-met-02">2. Waived Fees (<code>MET-02</code>)</h3>
+<ul>
+<li><strong>Business Definition:</strong> Portion of gross assessed fees foregone by the bank due to contractual relationship discounts, promotional waivers, or volume tier concessions.</li>
+<li><strong>Exact Formula:</strong> <code>SUM(waived_amount)</code> by <code>currency</code>, or <code>SUM(waived_amount_eur)</code> in EUR.</li>
+<li><strong>Source Model:</strong> <code>analytics.fct_fee_assessments</code>.</li>
+<li><strong>Grain:</strong> Assessment level (<code>assessment_id</code>).</li>
+<li><strong>Currency Treatment:</strong> Native <code>currency</code> or explicitly converted <code>waived_amount_eur</code>.</li>
+<li><strong>Date Field Used:</strong> <code>assessed_date</code>.</li>
+<li><strong>Treatment of Failed Transactions:</strong> Excluded.</li>
+<li><strong>Treatment of Waivers:</strong> Captures both <code>PARTIALLY_WAIVED</code> and <code>WAIVED_IN_FULL</code> assessments.</li>
+<li><strong>Treatment of Partial Collections &amp; Reversals:</strong> Waived fees are never billed or collected.</li>
+<li><strong>Known Limitations:</strong> Waiver reason codes are synthetic descriptors (<code>Commercial relationship tier partial waiver</code>).</li>
+</ul>
+<h3 id="3-net-collectible-fees-met-03">3. Net Collectible Fees (<code>MET-03</code>)</h3>
+<ul>
+<li><strong>Business Definition:</strong> Net contractual fee amount due from the customer after deducting commercial waivers from gross assessed fees.</li>
+<li><strong>Exact Formula:</strong> <code>SUM(net_collectible_amount)</code> where <code>net_collectible_amount = gross_assessed_amount - waived_amount</code>.</li>
+<li><strong>Source Model:</strong> <code>analytics.fct_fee_assessments</code>.</li>
+<li><strong>Grain:</strong> Assessment level (<code>assessment_id</code>).</li>
+<li><strong>Currency Treatment:</strong> Native <code>currency</code> or <code>net_collectible_amount_eur</code>.</li>
+<li><strong>Date Field Used:</strong> <code>assessed_date</code>.</li>
+<li><strong>Treatment of Failed Transactions:</strong> Excluded.</li>
+<li><strong>Treatment of Waivers:</strong> Net of waivers.</li>
+<li><strong>Treatment of Partial Collections:</strong> Represents the ceiling that collection sweeps may collect (<code>collected_amount + outstanding_amount = net_collectible_amount</code>).</li>
+<li><strong>Treatment of Reversals:</strong> Unchanged by post-collection reversals.</li>
+<li><strong>Known Limitations:</strong> Assumes synchronous assessment at transaction settlement.</li>
+</ul>
+<h3 id="4-collected-fees-met-04">4. Collected Fees (<code>MET-04</code>)</h3>
+<ul>
+<li><strong>Business Definition:</strong> Total fee cash successfully swept from customer subledger accounts into bank fee revenue accounts.</li>
+<li><strong>Exact Formula:</strong> <code>SUM(collected_amount)</code> by <code>currency</code>, or <code>SUM(collected_amount_eur)</code> in EUR.</li>
+<li><strong>Source Model:</strong> <code>analytics.fct_fee_assessments</code> (assessment-level roll-up) or <code>analytics.fct_fee_collections</code> (attempt-level grain).</li>
+<li><strong>Grain:</strong> <code>assessment_id</code> or <code>collection_id</code>.</li>
+<li><strong>Currency Treatment:</strong> Native <code>currency</code> or <code>collected_amount_eur</code>.</li>
+<li><strong>Date Field Used:</strong> <code>assessed_date</code> (on <code>fct_fee_assessments</code>) or <code>attempted_date</code> / <code>settled_date</code> (on <code>fct_fee_collections</code>).</li>
+<li><strong>Treatment of Failed Transactions:</strong> Excluded.</li>
+<li><strong>Treatment of Waivers:</strong> Waived amounts are excluded before collection targets are set.</li>
+<li><strong>Treatment of Partial Collections:</strong> Includes settled and partial sweep amounts; failed sweeps contribute <code>0.0000</code>.</li>
+<li><strong>Treatment of Reversals:</strong> Gross collected cash prior to any subsequent revenue reversal.</li>
+<li><strong>Known Limitations:</strong> Collection attempts in the current DEV dataset execute as a single sweep attempt (<code>collection_attempt_number = 1</code>).</li>
+</ul>
+<h3 id="5-outstanding-fees-uncollected-arrears-met-05">5. Outstanding Fees / Uncollected Arrears (<code>MET-05</code>)</h3>
+<ul>
+<li><strong>Business Definition:</strong> Collectible fee balance remaining unpaid after collection sweep attempts fail (e.g., due to <code>INSUFFICIENT_FUNDS</code> or <code>ACCOUNT_FROZEN</code>).</li>
+<li><strong>Exact Formula:</strong> <code>SUM(outstanding_amount)</code> where <code>outstanding_amount = net_collectible_amount - collected_amount</code>.</li>
+<li><strong>Source Model:</strong> <code>analytics.fct_fee_assessments</code>.</li>
+<li><strong>Grain:</strong> <code>assessment_id</code>.</li>
+<li><strong>Currency Treatment:</strong> Native <code>currency</code> or <code>outstanding_amount_eur</code>.</li>
+<li><strong>Date Field Used:</strong> <code>assessed_date</code>.</li>
+<li><strong>Treatment of Failed Collection Attempts:</strong> Directly captures operational revenue leakage from failed collection sweeps.</li>
+<li><strong>Known Limitations:</strong> Does not model aging buckets (30/60/90 days past due) or bad-debt write-offs.</li>
+</ul>
+<h3 id="6-reversed-fee-revenue-met-06">6. Reversed Fee Revenue (<code>MET-06</code>)</h3>
+<ul>
+<li><strong>Business Definition:</strong> Previously collected fee revenue refunded or reversed back to the customer.</li>
+<li><strong>Exact Formula:</strong> <code>SUM(reversed_amount)</code> (on <code>fct_fee_assessments</code>) or <code>SUM(reversed_revenue_amount)</code> (on <code>fct_customer_revenue</code>).</li>
+<li><strong>Source Model:</strong> <code>analytics.fct_fee_assessments</code> / <code>analytics.fct_customer_revenue</code>.</li>
+<li><strong>Grain:</strong> <code>assessment_id</code> or <code>customer_revenue_id</code>.</li>
+<li><strong>Currency Treatment:</strong> Native <code>currency</code> or <code>reversed_amount_eur</code>.</li>
+<li><strong>Date Field Used:</strong> <code>assessed_date</code> / <code>recognized_date</code>.</li>
+<li><strong>Treatment of Reversals:</strong> Deducted from <code>gross_collected_revenue</code> when computing <code>net_recognized_revenue</code>.</li>
+<li><strong>Known Limitations:</strong> Synthetic DEV dataset has <code>0.0000</code> reversed fee revenue on settled fee collections (while transaction reversals are tested in ledger entries).</li>
+</ul>
+<h3 id="7-net-recognised-revenue-met-08">7. Net Recognised Revenue (<code>MET-08</code>)</h3>
+<ul>
+<li><strong>Business Definition:</strong> Authoritative bottom-line fee revenue recognised by the bank after deducting fee reversals and direct network/interchange pass-through costs from gross collected fees.</li>
+<li><strong>Exact Formula:</strong>
+  $$\text{Net Recognised Revenue} = \text{Gross Collected Revenue} - \text{Reversed Revenue} - \text{Pass-Through Cost}$$</li>
+<li><strong>Source Model:</strong> <code>analytics.fct_customer_revenue</code> / <code>analytics.fct_fee_assessments</code>.</li>
+<li><strong>Grain:</strong> <code>customer_revenue_id</code> or <code>assessment_id</code>.</li>
+<li><strong>Currency Treatment:</strong> Native <code>currency</code> (<code>net_recognized_revenue</code>) or EUR (<code>net_recognized_revenue_eur</code>).</li>
+<li><strong>Date Field Used:</strong> <code>reporting_month</code> / <code>assessed_date</code> / <code>recognized_date</code>.</li>
+<li><strong>Treatment of Failed Collections:</strong> Failed collection attempts (<code>collection_status = 'FAILED'</code>) generate zero recognized revenue.</li>
+<li><strong>Known Limitations:</strong> Uses cash-collection-based revenue recognition rather than IFRS 15 multi-period accrual accounting.</li>
+</ul>
+<h3 id="8-transaction-volume-met-09-value-met-10-and-average-value-met-11">8. Transaction Volume (<code>MET-09</code>), Value (<code>MET-10</code>), and Average Value (<code>MET-11</code>)</h3>
+<ul>
+<li><strong>Business Definition:</strong> Count, total principal amount, and mean principal amount of commercial transactions, segmented by <code>transaction_status</code> (<code>SETTLED</code>, <code>PENDING</code>, <code>REVERSED</code>, <code>FAILED</code>).</li>
+<li><strong>Exact Formula:</strong></li>
+<li>Volume: <code>COUNT(transaction_id)</code></li>
+<li>Value (Native): <code>SUM(transaction_amount)</code> grouped by <code>transaction_currency</code></li>
+<li>Value (EUR): <code>SUM(transaction_amount_eur)</code></li>
+<li>Average Value (EUR): <code>AVG(transaction_amount_eur)</code></li>
+<li><strong>Source Model:</strong> <code>analytics.fct_transactions</code>.</li>
+<li><strong>Grain:</strong> <code>transaction_id</code>.</li>
+<li><strong>Currency Treatment:</strong> Never sum <code>transaction_amount</code> across currencies; use <code>transaction_amount_eur</code> for cross-currency totals.</li>
+<li><strong>Date Field Used:</strong> <code>transaction_date</code> (<code>initiated_at::date</code>).</li>
+<li><strong>Treatment of Failed/Pending/Reversed Transactions:</strong> Filter on <code>transaction_status = 'SETTLED'</code> for settled commercial volume, or inspect all statuses for operational funnel analysis.</li>
+</ul>
+<h3 id="9-fee-collection-rate-met-13-and-fee-leakage-indicators-met-14-met-15">9. Fee Collection Rate (<code>MET-13</code>) and Fee Leakage Indicators (<code>MET-14</code>, <code>MET-15</code>)</h3>
+<ul>
+<li><strong>Business Definition:</strong></li>
+<li><strong>Fee Collection Rate (<code>MET-13</code>):</strong> Percentage of net collectible fees successfully swept into cash (<code>SUM(collected_amount) / NULLIF(SUM(net_collectible_amount), 0)</code>).</li>
+<li><strong>Commercial Waiver Rate (<code>MET-14</code>):</strong> Percentage of gross assessed fees conceded via waivers (<code>SUM(waived_amount) / NULLIF(SUM(gross_assessed_amount), 0)</code>).</li>
+<li><strong>Total Fee Leakage Rate (<code>MET-15</code>):</strong> Combined share of gross assessed fees lost to commercial waivers plus operational collection failures (<code>SUM(waived_amount + outstanding_amount) / NULLIF(SUM(gross_assessed_amount), 0)</code>).</li>
+<li><strong>Source Model:</strong> <code>analytics.fct_fee_assessments</code> / <code>analytics.fct_customer_revenue</code>.</li>
+<li><strong>Currency Treatment:</strong> Computed per native currency or using EUR-converted numerator and denominator.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+    
+  </body>
+</html>
