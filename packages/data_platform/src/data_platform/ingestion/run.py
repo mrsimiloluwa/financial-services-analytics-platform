@@ -18,6 +18,7 @@ def run_ingestion(
     reporting_base_currency: str = "EUR",
     reset: bool = False,
     settings: Settings | None = None,
+    database: str | None = None,
 ) -> int:
     """Execute end-to-end generation, COPY ingestion, and post-load reconciliation."""
     print(
@@ -39,7 +40,13 @@ def run_ingestion(
     for k, v in batch_data.manifest.entity_counts.items():
         print(f"  - {k}: {v}")
 
-    active_settings = settings or Settings()
+    if settings is not None:
+        active_settings = settings
+    elif database:
+        active_settings = Settings(postgres_db=database)
+    else:
+        active_settings = Settings()
+
     print(
         f"[{datetime.now(UTC).isoformat()}] Connecting to PostgreSQL: {active_settings.postgres_host}:{active_settings.postgres_port}/{active_settings.postgres_db}"
     )
@@ -47,7 +54,7 @@ def run_ingestion(
     with get_postgres_connection(active_settings) as conn:
         if reset:
             print(
-                f"[{datetime.now(UTC).isoformat()}] Reset requested on database '{settings.postgres_db}': truncating existing raw tables..."
+                f"[{datetime.now(UTC).isoformat()}] Reset requested on database '{active_settings.postgres_db}': truncating existing raw tables..."
             )
             truncate_raw_tables(conn, allow_non_test_db=True)
 
@@ -82,6 +89,12 @@ if __name__ == "__main__":
     parser.add_argument(
         "--currency", default="EUR", choices=["EUR", "USD", "GBP"], help="Reporting base currency"
     )
+    parser.add_argument(
+        "--database",
+        type=str,
+        default=None,
+        help="Target PostgreSQL database name",
+    )
     parser.add_argument("--reset", action="store_true", help="Truncate raw tables before ingestion")
     args = parser.parse_args()
 
@@ -91,5 +104,6 @@ if __name__ == "__main__":
             seed=args.seed,
             reporting_base_currency=args.currency,
             reset=args.reset,
+            database=args.database,
         )
     )

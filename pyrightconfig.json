@@ -1,0 +1,12 @@
+{
+    "include": [
+        "packages",
+        "tests"
+    ],
+    "extraPaths": [
+        "packages/shared/src",
+        "packages/data_platform/src",
+        "packages/ai_services/src",
+        "packages/data_apps/src"
+    ]
+}

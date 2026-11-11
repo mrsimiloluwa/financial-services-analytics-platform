@@ -1,4 +1,11 @@
 {
     "python.analysis.autoImportCompletions": true,
-    "git.ignoreLimitWarning": true
+    "git.ignoreLimitWarning": true,
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/packages/shared/src",
+        "${workspaceFolder}/packages/data_platform/src",
+        "${workspaceFolder}/packages/ai_services/src",
+        "${workspaceFolder}/packages/data_apps/src"
+    ],
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python"
 }
