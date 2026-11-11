@@ -6,7 +6,7 @@ The Enterprise AI Analytics Platform is designed for single-node container deplo
 
 ```mermaid
 graph TD
-    Client["🌐 External Client / Recruiter"]
+    Client["🌐 External Client / Web User"]
     ReverseProxy["🔒 Reverse Proxy (Nginx / Caddy / Cloudflare)<br/>TLS Termination & Port Mapping"]
     
     subgraph Docker_Compose_Host ["Production VM / Container Host"]
@@ -83,11 +83,11 @@ graph TD
 
 ### 3.1 Streamlit Community Cloud (Standalone Embedded Architecture — Recommended)
 
-The recommended production deployment for public recruiter demonstration is **Streamlit Community Cloud** running entirely in-process with the packaged synthetic DEV showcase dataset loaded into an embedded **DuckDB** analytical warehouse. This requires **zero external cloud databases**, **zero external database credentials**, and **zero cloud hosting fees**.
+The recommended deployment for public exploration is **Streamlit Community Cloud** running entirely in-process with the packaged synthetic DEV showcase dataset loaded into an embedded **DuckDB** analytical warehouse. This requires **zero external cloud databases**, **zero external database credentials**, and **zero cloud hosting fees**.
 
 ```mermaid
 graph TD
-    User["🌐 Recruiter / Public User"]
+    User["🌐 Web User / Explorer"]
     
     subgraph Streamlit_Community_Cloud ["Streamlit Community Cloud (Free Serverless)"]
         UI["Streamlit Executive UI<br/>(packages/data_apps/src/data_apps/app.py)"]

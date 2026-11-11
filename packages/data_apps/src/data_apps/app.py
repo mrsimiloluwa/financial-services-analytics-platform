@@ -8,8 +8,10 @@ backed by governed PostgreSQL analytical marts.
 from __future__ import annotations
 
 import logging
+import os
 import sys
 from pathlib import Path
+from typing import Any
 
 # Ensure monorepo package source roots are in sys.path for standalone Streamlit Cloud execution
 _REPO_ROOT = Path(__file__).resolve().parents[4]
@@ -17,6 +19,21 @@ for _pkg in ["shared", "data_platform", "ai_services", "data_apps"]:
     _pkg_src = _REPO_ROOT / "packages" / _pkg / "src"
     if _pkg_src.exists() and str(_pkg_src) not in sys.path:
         sys.path.insert(0, str(_pkg_src))
+
+# Auto-default to embedded DuckDB if no external PostgreSQL database is configured or listening
+if "DATABASE_BACKEND" not in os.environ and (
+    "POSTGRES_HOST" not in os.environ
+    or os.environ.get("POSTGRES_HOST") in ("localhost", "127.0.0.1", "")
+):
+    import socket
+
+    try:
+        with socket.create_connection(
+            ("127.0.0.1", int(os.environ.get("POSTGRES_PORT", 5432))), timeout=0.15
+        ):
+            pass
+    except OSError:
+        os.environ["DATABASE_BACKEND"] = "duckdb"
 
 import httpx
 import pandas as pd
@@ -43,6 +60,14 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
+
+
+def display_dataframe(data: Any, **kwargs: Any) -> Any:
+    """Display dataframe adapting seamlessly to Streamlit width conventions."""
+    try:
+        return st.dataframe(data, width="stretch", **kwargs)
+    except TypeError:
+        return st.dataframe(data, use_container_width=True, **kwargs)
 
 
 @st.cache_resource
@@ -402,7 +427,7 @@ def main():
                 st.line_chart(chart_data)
 
                 with st.expander("View Monthly Performance Breakdown Data"):
-                    st.dataframe(trends_df, use_container_width=True)
+                    display_dataframe(trends_df)
                     csv_trends = trends_df.to_csv(index=False).encode("utf-8")
                     st.download_button(
                         label="📥 Download Monthly Trends CSV",
@@ -446,7 +471,7 @@ def main():
             with filter_col2:
                 st.caption(f"Displaying top **{len(cust_df)}** commercial clients by net revenue.")
 
-            st.dataframe(
+            display_dataframe(
                 cust_df.style.format(
                     {
                         "Net Revenue (EUR)": "€{:,.2f}",
@@ -455,7 +480,6 @@ def main():
                         "Arrears (EUR)": "€{:,.2f}",
                     }
                 ),
-                use_container_width=True,
             )
 
             csv_cust = cust_df.to_csv(index=False).encode("utf-8")
@@ -500,14 +524,13 @@ def main():
                     }
                 )
 
-                st.dataframe(
+                display_dataframe(
                     arr_df.style.format(
                         {
                             "Native Arrears": "{:,.2f}",
                             "EUR Arrears": "€{:,.2f}",
                         }
                     ),
-                    use_container_width=True,
                 )
 
                 csv_arr = arr_df.to_csv(index=False).encode("utf-8")
@@ -672,7 +695,7 @@ def main():
                 }
                 for m in metrics
             ]
-            st.dataframe(pd.DataFrame(metrics_table), use_container_width=True)
+            display_dataframe(pd.DataFrame(metrics_table))
 
         st.markdown("#### Queryable Dimensional Marts (`analytics` schema)")
         if models:
@@ -699,7 +722,7 @@ def main():
                                 for c in cols_list
                             ]
                         )
-                        st.dataframe(cols_df, use_container_width=True)
+                        display_dataframe(cols_df)
 
 
 def _render_assistant_response(resp: AnalyticsQueryResponse):
@@ -742,7 +765,7 @@ def _render_assistant_response(resp: AnalyticsQueryResponse):
     if resp.data and len(resp.data) > 0:
         with st.expander("📊 View Result Records", expanded=True):
             df = pd.DataFrame(resp.data)
-            st.dataframe(df, use_container_width=True)
+            display_dataframe(df)
             csv_data = df.to_csv(index=False).encode("utf-8")
             st.download_button(
                 label="📥 Download Result Data CSV",

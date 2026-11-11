@@ -1,10 +1,17 @@
-# Enterprise Financial Analytics & AI Platform: Portfolio Walkthrough
+# Enterprise Financial Analytics & AI Platform: Architecture & Exploration Guide
 
 ## 1. Executive Summary
 
 The **Enterprise AI Analytics Platform for Financial Services** is a modular, production-grade financial data, analytics engineering, and governed AI platform. 
 
 It solves a critical challenge in commercial banking and financial operations: **bridging the gap between raw ledger transactions, governed accounting metrics, and natural-language AI inquiries without compromising financial accuracy, data contracts, or database security.**
+
+Whether you are a data engineer, financial analyst, software developer, or curious explorer, this guide walks you through the system architecture, business principles, and how to interact with the platform.
+
+### What Does the Platform Do?
+- **Tracks Revenue & Fee Collection**: Commercial banks charge transaction fees, interchange, and account servicing charges. This platform models the complete journey from initial fee assessment to waiver concession, cash settlement, arrears, and recognized net revenue.
+- **Enforces Accounting Integrity**: Ensures that every euro of recognized revenue reconciles to double-entry ledger entries and dimensional data models down to the exact cent.
+- **Powers Natural-Language Analytics**: Allows users to ask conversational questions (e.g. *"What was our total net revenue?"* or *"Which clients have outstanding fees?"*) while enforcing compile-time SQL safety gates so the AI cannot hallucinate numbers or execute malicious queries.
 
 ---
 
@@ -122,24 +129,25 @@ uv run mkdocs build --strict
 
 ---
 
-## 7. Public Demonstration & Recruiter Verification Guide
+## 7. Interactive Exploration & Verification Guide
 
 ### 7.1 Cloud Hosting Evaluation Matrix
 
 | Hosting Architecture | Monthly Cost | Cold-Start Behavior | Data Persistence | Recommended For |
 | :--- | :--- | :--- | :--- | :--- |
-| **Streamlit Cloud + Neon PostgreSQL** | **$0.00 (Free)** | Yes (sleeps after 15m inactivity; 30s wake-up) | 0.5GB Free Tier Persistent Storage | Zero-cost public showcase of the executive UI and database |
-| **Railway Multi-Container** | **~$5.00 / month** | None (always-on container cluster) | Persistent Docker Volume | Continuous demo with live FastAPI REST endpoints and HTTPS |
+| **Streamlit Cloud + Embedded DuckDB** | **$0.00 (Free)** | ~15s container boot | Packaged Git CSV Data | Zero-cost, zero-credential public showcase of the complete UI and AI Copilot |
+| **Streamlit Cloud + Neon PostgreSQL** | **$0.00 (Free)** | Yes (sleeps after 15m inactivity; 30s wake-up) | 0.5GB Free Tier Persistent Storage | Public showcase connecting to a live serverless PostgreSQL warehouse |
+| **Railway Multi-Container** | **~$5.00 / month** | None (always-on container cluster) | Persistent Docker Volume | Continuous deployment with live FastAPI REST endpoints and HTTPS |
 | **Single-Node VPS (Hetzner CAX11 / Lightsail)** | **€3.79 / month** | None (dedicated 2 vCPU, 4GB RAM) | 40GB NVMe Persistent Block Storage | Full-stack deployment running Airflow, Postgres, API, and Dashboard |
 
 ### 7.2 Demonstration Mode (Mock vs Live LLM)
 In public demonstrations, the platform operates in **Safe Demonstration Mode** by default:
 - **Engine Badge**: Clearly visible in the sidebar as `🧪 Demo Mode: Deterministic Mock Provider (Zero Hallucination)`.
-- **Determinism**: Evaluates real SQL queries against the DEV PostgreSQL warehouse and returns certified accounting explanations without incurring LLM token costs or external network dependencies.
+- **Determinism**: Evaluates real SQL queries against the DEV warehouse and returns certified accounting explanations without incurring LLM token costs or external network dependencies.
 - **Switching to Live LLM**: Setting `LLM_PROVIDER=openai_compatible` and `LLM_API_KEY=sk-...` instantly connects commercial reasoning models while retaining all SQLGlot AST security boundaries.
 
-### 7.3 Recruiter Test Scenarios
-Recruiters and technical reviewers can execute the full end-to-end journey via either the Streamlit UI or the cURL endpoints:
+### 7.3 Example Inquiries & Verification Scenarios
+Anyone exploring the platform can execute the full end-to-end user journey via either the Streamlit UI or the cURL endpoints:
 
 1. **Revenue Reconciliation Check**:
    - Inquire: *"What was our total net recognized revenue?"*

@@ -3,6 +3,7 @@
 Provides safe connection factories with timeout controls and resource cleanup.
 """
 
+import logging
 from collections.abc import Generator
 from contextlib import contextmanager
 from typing import Any
@@ -12,6 +13,8 @@ import psycopg
 from psycopg import sql
 
 from shared.config import Settings, get_settings
+
+logger = logging.getLogger(__name__)
 
 TEST_DATABASE_NAME = "analytics_platform_test"
 
@@ -33,11 +36,27 @@ def get_postgres_connection(
             yield duck_conn
         return
 
-    conn = psycopg.connect(
-        conninfo=cfg.postgres_connection_string,
-        connect_timeout=cfg.db_timeout_seconds,
-        autocommit=False,
-    )
+    try:
+        conn = psycopg.connect(
+            conninfo=cfg.postgres_connection_string,
+            connect_timeout=cfg.db_timeout_seconds,
+            autocommit=False,
+        )
+    except psycopg.OperationalError as exc:
+        if cfg.postgres_host in ("localhost", "127.0.0.1", ""):
+            logger.warning(
+                "PostgreSQL connection to %s:%s unavailable (%s). Falling back to embedded DuckDB connection.",
+                cfg.postgres_host,
+                cfg.postgres_port,
+                exc,
+            )
+            from shared.duckdb_reader import get_duckdb_reader_connection
+
+            with get_duckdb_reader_connection(use_test_db=False) as duck_conn:
+                yield duck_conn
+            return
+        raise
+
     try:
         yield conn
     finally:
@@ -68,11 +87,27 @@ def get_postgres_reader_connection(
         if use_test_db
         else cfg.postgres_reader_connection_string
     )
-    conn = psycopg.connect(
-        conninfo=conninfo,
-        connect_timeout=5,  # 5-second connection timeout for reader
-        autocommit=True,  # Read-only queries don't need transaction wrapping
-    )
+    try:
+        conn = psycopg.connect(
+            conninfo=conninfo,
+            connect_timeout=5,  # 5-second connection timeout for reader
+            autocommit=True,  # Read-only queries don't need transaction wrapping
+        )
+    except psycopg.OperationalError as exc:
+        if cfg.postgres_host in ("localhost", "127.0.0.1", ""):
+            logger.warning(
+                "PostgreSQL reader connection to %s:%s unavailable (%s). Falling back to embedded DuckDB reader.",
+                cfg.postgres_host,
+                cfg.postgres_port,
+                exc,
+            )
+            from shared.duckdb_reader import get_duckdb_reader_connection
+
+            with get_duckdb_reader_connection(use_test_db=use_test_db) as duck_conn:
+                yield duck_conn
+            return
+        raise
+
     try:
         yield conn
     finally:

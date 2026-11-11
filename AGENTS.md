@@ -526,9 +526,9 @@ Do not skip phases or implement future functionality prematurely.
 
 The objective is a coherent, working enterprise-style platform—not a collection of disconnected technology demonstrations.
 
-## 21. Portfolio & Recruiter-Readiness Standards
+## 21. Portfolio & Engineering Standards
 
-This repository is a public-facing professional engineering portfolio project. It must demonstrate implementation quality, technical decision-making and the ability to explain complex engineering concepts.
+This repository is a public-facing professional engineering portfolio project for a broad audience. It demonstrates implementation quality, technical decision-making and the ability to explain complex engineering concepts.
 
 ### 1. Show the actual implementation
 

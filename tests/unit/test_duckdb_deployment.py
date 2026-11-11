@@ -176,3 +176,22 @@ def test_metadata_service_standalone_fallback():
     ctx = meta.build_ai_query_context("fct_customer_revenue")
     assert ctx.model_name == "fct_customer_revenue"
     assert len(ctx.columns) > 0
+
+
+def test_duckdb_automatic_fallback_when_postgres_unreachable(monkeypatch):
+    """Verify that if PostgreSQL is unreachable on localhost (e.g. Streamlit Cloud),
+
+    get_postgres_reader_connection falls back to embedded DuckDB reader without crashing.
+    """
+    monkeypatch.delenv("DATABASE_BACKEND", raising=False)
+    monkeypatch.setenv("POSTGRES_HOST", "127.0.0.1")
+    monkeypatch.setenv("POSTGRES_PORT", "59999")  # Non-existent port
+    get_settings.cache_clear()
+
+    from shared.db import get_postgres_reader_connection
+
+    with get_postgres_reader_connection() as conn, conn.cursor() as cur:
+        cur.execute("SELECT COUNT(*) FROM analytics.dim_customers;")
+        row = cur.fetchone()
+        assert row is not None
+        assert row[0] == 50

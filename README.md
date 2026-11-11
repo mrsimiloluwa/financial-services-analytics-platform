@@ -268,8 +268,8 @@ Phase 7 hardens the platform into a production-grade, secure, and reproducible p
   - Concurrency verified with 20 parallel requests executing in <150ms p95 latency.
 - **Enterprise CI/CD Automation**:
   - Complete 4-job GitHub Actions workflow (`.github/workflows/ci.yml`) covering Ruff lint/format, MkDocs strict validation, PostgreSQL 16 containerized dbt build and pytest suite, and multi-stage Docker image builds.
-- **Portfolio & Reviewer Documentation**:
-  - [Recruiter & Reviewer Walkthrough](docs/portfolio/walkthrough.md): Comprehensive guide with architecture diagrams, financial equations, sample prompts, and engineering trade-offs.
+- **Architecture & System Documentation**:
+  - [Architecture & Exploration Walkthrough](docs/portfolio/walkthrough.md): Comprehensive guide with architecture diagrams, financial equations, sample prompts, and engineering trade-offs.
   - [Production Deployment Runbook](docs/runbooks/deployment.md): Step-by-step production setup for Docker Compose, Streamlit Community Cloud, Render, and Railway with disaster recovery procedures.
 
 ```bash
@@ -287,7 +287,7 @@ curl -s http://127.0.0.1:8000/telemetry | jq .
 
 ## 12. Public Deployment & Portfolio Launch (Phase 8)
 
-Phase 8 elevates the platform into a decoupled, public, recruiter-accessible demonstration:
+Phase 8 elevates the platform into a decoupled, public demonstration:
 
 - **Decoupled Client-Server Communication**:
   - The Streamlit executive dashboard supports seamless REST API integration via `API_BASE_URL` and `API_KEY`.
@@ -300,8 +300,8 @@ Phase 8 elevates the platform into a decoupled, public, recruiter-accessible dem
   - **Streamlit Community Cloud + Neon PostgreSQL ($0 / month)**: 100% free serverless architecture with 0.5GB persistent storage on Neon with SSL.
   - **Railway.app Multi-Container (~$5 / month)**: Deploys the multi-container stack (`postgres`, `api`, `dashboard`) with persistent volumes and automatic HTTPS (`*.up.railway.app`).
   - **Single-Node VPS (€3.79 / month on Hetzner CAX11 / $5 AWS Lightsail)**: Complete institutional deployment running Airflow, Postgres, API, and Dashboard behind Caddy with Let's Encrypt SSL.
-- **Portfolio & Verification Runbooks**:
-  - [Recruiter & Reviewer Walkthrough](docs/portfolio/walkthrough.md): Comprehensive guide with architecture diagrams, domain concepts, sample prompts, and engineering trade-offs.
+- **Architecture & Verification Runbooks**:
+  - [Architecture & Exploration Walkthrough](docs/portfolio/walkthrough.md): Comprehensive guide with architecture diagrams, domain concepts, sample prompts, and engineering trade-offs.
   - [Production Deployment Runbook](docs/runbooks/deployment.md): Step-by-step production setup across cloud providers with disaster recovery procedures.
   - [Phase 8 Milestone Documentation](docs/phases/phase-8-deployment.md): Detailed audit and public launch records.
 
