@@ -80,6 +80,7 @@ jobs:
 
     env:
       APP_ENV: testing
+      DATABASE_BACKEND: postgres
       POSTGRES_HOST: localhost
       POSTGRES_PORT: 5432
       POSTGRES_DB: analytics_platform_test
@@ -115,10 +116,13 @@ jobs:
       - name: Ingest TEST dataset
         run: uv run python -m data_platform.ingestion.run --profile TEST --database analytics_platform_test
 
+      - name: Provision least-privilege analytics_reader
+        run: uv run python -m data_platform.security.provision_reader
+
       - name: Run dbt analytics build
         run: uv run dbt build --project-dir packages/data_platform/dbt_analytics --profiles-dir /tmp/dbt_profiles --target test
 
-      - name: Provision least-privilege analytics_reader
+      - name: Grant analytics_reader permissions
         run: uv run python -m data_platform.security.provision_reader
 
       - name: Run pytest test suite

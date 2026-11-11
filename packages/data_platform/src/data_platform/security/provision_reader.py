@@ -5,7 +5,6 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-import psycopg
 from psycopg import sql
 from shared.config import Settings, get_settings
 from shared.db import (
@@ -27,12 +26,16 @@ APPROVED_QUERYABLE_MARTS = [
 
 
 def provision_analytics_reader_role(
-    conn: psycopg.Connection[Any],
+    conn: Any,
     settings: Settings | None = None,
     approved_marts: list[str] | None = None,
 ) -> None:
     """Configure least-privilege analytics_reader role on the active PostgreSQL database connection."""
     cfg = settings or get_settings()
+    if cfg.is_duckdb:
+        logger.info("Running in DuckDB mode; skipping PostgreSQL role provisioning.")
+        return
+
     reader_user = cfg.postgres_reader_user
     reader_password = cfg.postgres_reader_password
     marts = approved_marts or APPROVED_QUERYABLE_MARTS
@@ -147,17 +150,21 @@ def provision_analytics_reader_role(
 def provision_both_environments(settings: Settings | None = None) -> None:
     """Provision least-privilege analytics_reader across both dev and test databases."""
     cfg = settings or get_settings()
+    if cfg.is_duckdb:
+        logger.info("Running in DuckDB mode; skipping PostgreSQL role provisioning.")
+        return
 
     # DEV database
     logger.info("Provisioning analytics_reader on DEV database '%s'...", cfg.postgres_db)
     with get_postgres_connection(cfg) as dev_conn:
         provision_analytics_reader_role(dev_conn, cfg)
 
-    # TEST database
-    ensure_test_database_exists(cfg)
-    logger.info("Provisioning analytics_reader on TEST database '%s'...", cfg.postgres_test_db)
-    with get_test_postgres_connection(cfg) as test_conn:
-        provision_analytics_reader_role(test_conn, cfg)
+    # TEST database (if distinct from DEV)
+    if cfg.postgres_db != cfg.postgres_test_db:
+        ensure_test_database_exists(cfg)
+        logger.info("Provisioning analytics_reader on TEST database '%s'...", cfg.postgres_test_db)
+        with get_test_postgres_connection(cfg) as test_conn:
+            provision_analytics_reader_role(test_conn, cfg)
 
 
 if __name__ == "__main__":
