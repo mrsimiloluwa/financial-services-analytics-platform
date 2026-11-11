@@ -83,6 +83,9 @@ def provision_analytics_reader_role(
                 "ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE ALL ON TABLES FROM {};"
             ).format(sql.Identifier(reader_user))
         )
+
+        # Ensure analytics schema exists so role privileges can be configured idempotently
+        cur.execute("CREATE SCHEMA IF NOT EXISTS analytics;")
         cur.execute(
             sql.SQL(
                 "ALTER DEFAULT PRIVILEGES IN SCHEMA analytics REVOKE ALL ON TABLES FROM {};"
