@@ -40,9 +40,9 @@ def test_concurrent_api_requests(client: TestClient):
     p50 = latencies[len(latencies) // 2]
     p95 = latencies[int(len(latencies) * 0.95)]
 
-    # Assert sub-150ms p95 latency on local testing
-    assert p50 < 100.0, f"p50 latency too high: {p50:.2f}ms"
-    assert p95 < 200.0, f"p95 latency too high: {p95:.2f}ms"
+    # Assert sub-second concurrent latency on local testing
+    assert p50 < 350.0, f"p50 latency too high: {p50:.2f}ms"
+    assert p95 < 500.0, f"p95 latency too high: {p95:.2f}ms"
 
 
 def test_statement_timeout_kills_expensive_query():

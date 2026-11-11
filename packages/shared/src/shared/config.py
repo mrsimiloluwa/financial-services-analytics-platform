@@ -29,6 +29,39 @@ def _load_streamlit_secrets() -> None:
         pass
 
 
+def _detect_default_database_backend() -> str:
+    """Detect default database backend based on environment and connectivity."""
+    # 1. Respect explicit environment variable if set
+    backend = os.environ.get("DATABASE_BACKEND")
+    if backend:
+        return backend.lower()
+
+    # 2. Check Streamlit secrets if running inside Streamlit
+    try:
+        import streamlit as st
+
+        if hasattr(st, "secrets") and "DATABASE_BACKEND" in st.secrets:
+            return str(st.secrets["DATABASE_BACKEND"]).lower()
+    except Exception:
+        pass
+
+    # 3. If POSTGRES_HOST is set to a remote host (e.g. Docker container 'postgres' or Neon), use postgres
+    host = os.environ.get("POSTGRES_HOST")
+    if host and host not in ("localhost", "127.0.0.1", ""):
+        return "postgres"
+
+    # 4. Probe localhost:5432 with a fast non-blocking timeout
+    # If not listening (e.g. Streamlit Community Cloud serverless container), default to duckdb
+    import socket
+
+    port = int(os.environ.get("POSTGRES_PORT", "5432"))
+    try:
+        with socket.create_connection((host or "127.0.0.1", port), timeout=0.15):
+            return "postgres"
+    except OSError:
+        return "duckdb"
+
+
 _load_streamlit_secrets()
 
 
@@ -53,8 +86,11 @@ class Settings(BaseSettings):
         alias="REPORTING_BASE_CURRENCY",
     )
 
-    # Database Backend Selection (postgres vs duckdb)
-    database_backend: str = Field(default="postgres", alias="DATABASE_BACKEND")
+    # Database Backend Selection (postgres vs duckdb with auto-detection)
+    database_backend: str = Field(
+        default_factory=_detect_default_database_backend,
+        alias="DATABASE_BACKEND",
+    )
 
     # PostgreSQL Database Settings
     postgres_host: str = Field(default="localhost", alias="POSTGRES_HOST")

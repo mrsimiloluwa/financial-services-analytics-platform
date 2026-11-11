@@ -57,7 +57,7 @@ markdown_extensions:
 
 nav:
   - Overview: index.md
-  - Portfolio Guide: portfolio/walkthrough.md
+  - Architecture Walkthrough: portfolio/walkthrough.md
   - Architecture:
       - System Design: architecture/overview.md
       - Ingestion Pipeline: architecture/ingestion-pipeline.md

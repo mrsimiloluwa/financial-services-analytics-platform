@@ -2,7 +2,7 @@
 
 ## 1. Milestone Overview
 
-Phase 7 hardens the Enterprise AI Analytics Platform into a production-ready, secure, and reproducible public demonstration. It bridges theoretical architecture with operational rigor: enabling real OpenAI-compatible LLM providers alongside deterministic offline mocks, introducing API authentication and sliding-window rate limiting, enforcing strict security headers, establishing automated GitHub Actions CI/CD workflows, providing telemetry tracking, and authoring recruiter-ready walkthroughs and deployment runbooks.
+Phase 7 hardens the Enterprise AI Analytics Platform into a production-ready, secure, and reproducible public demonstration. It bridges theoretical architecture with operational rigor: enabling real OpenAI-compatible LLM providers alongside deterministic offline mocks, introducing API authentication and sliding-window rate limiting, enforcing strict security headers, establishing automated GitHub Actions CI/CD workflows, providing telemetry tracking, and authoring comprehensive architectural walkthroughs and deployment runbooks.
 
 ---
 
@@ -52,8 +52,8 @@ Phase 7 hardens the Enterprise AI Analytics Platform into a production-ready, se
   * **Job 3: Test & Validate**: Spins up a PostgreSQL 16 service container, initializes raw schemas, runs dbt migrations and tests, and executes the complete pytest suite.
   * **Job 4: Docker Image Build**: Validates multi-stage Docker build for both FastAPI backend and Streamlit dashboard.
 
-### 2.5 Recruiter Walkthrough & Deployment Runbook
-* **Recruiter & Reviewer Guide (`docs/portfolio/walkthrough.md`)**:
+### 2.5 Architecture Walkthrough & Deployment Runbook
+* **Architecture Walkthrough Guide (`docs/portfolio/walkthrough.md`)**:
   * Architectural overview and business domain context.
   * Detailed walkthrough of the 7-layer technology stack.
   * Interactive business queries, accounting formulas, and governance proofs.
