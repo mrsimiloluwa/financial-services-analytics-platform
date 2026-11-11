@@ -198,3 +198,13 @@ def test_limit_injection_and_clamping(validator: SQLGlotASTValidator):
     assert res2.is_valid is True
     assert "LIMIT 1000" in res2.sanitized_sql
     assert "50000" not in res2.sanitized_sql
+
+
+def test_smaller_user_limit_is_preserved_not_widened(validator: SQLGlotASTValidator):
+    """A user LIMIT below the cap must stay as-is (previously every LIMIT became 1000)."""
+    res = validator.validate_and_sanitize(
+        "SELECT customer_id FROM analytics.fct_customer_revenue LIMIT 10;"
+    )
+    assert res.is_valid
+    assert res.sanitized_sql.rstrip(";").endswith("LIMIT 10")
+    assert "LIMIT 1000" not in res.sanitized_sql

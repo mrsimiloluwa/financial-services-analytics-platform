@@ -50,17 +50,7 @@ def _detect_default_database_backend() -> str:
     if host and host not in ("localhost", "127.0.0.1", ""):
         return "postgres"
 
-    # 4. If running in a Streamlit context without explicit external DB, default to duckdb
-    import sys
-
-    if (
-        "STREAMLIT_SERVER_PORT" in os.environ
-        or "STREAMLIT_SERVER_HEADLESS" in os.environ
-        or "streamlit" in sys.modules
-    ):
-        return "duckdb"
-
-    # 5. Probe localhost:5432 with a fast non-blocking timeout
+    # 4. Probe localhost:5432 with a fast non-blocking timeout
     # If not listening (e.g. Streamlit Community Cloud serverless container), default to duckdb
     import socket
 

@@ -20,13 +20,24 @@ for _pkg in ["shared", "data_platform", "ai_services", "data_apps"]:
     if _pkg_src.exists() and str(_pkg_src) not in sys.path:
         sys.path.insert(0, str(_pkg_src))
 
-# Standalone cloud deployment: Streamlit Cloud runs serverless with no local PostgreSQL.
-# If no external PostgreSQL host is configured, default immediately to embedded DuckDB.
-if (
-    os.environ.get("POSTGRES_HOST") in (None, "", "localhost", "127.0.0.1")
-    and os.environ.get("DATABASE_BACKEND") != "postgres"
+# Standalone cloud deployment: Streamlit Community Cloud has no local PostgreSQL. When no external
+# database host is configured and nothing is listening on the local Postgres port, use the
+# embedded DuckDB marts. A reachable local PostgreSQL (development) is left untouched.
+if "DATABASE_BACKEND" not in os.environ and os.environ.get("POSTGRES_HOST") in (
+    None,
+    "",
+    "localhost",
+    "127.0.0.1",
 ):
-    os.environ["DATABASE_BACKEND"] = "duckdb"
+    import socket
+
+    try:
+        with socket.create_connection(
+            ("127.0.0.1", int(os.environ.get("POSTGRES_PORT", "5432"))), timeout=0.15
+        ):
+            pass
+    except OSError:
+        os.environ["DATABASE_BACKEND"] = "duckdb"
 
 # Streamlit keeps imported modules (and lru_cache state) alive across redeploys/reruns.
 # Reset cached settings so the backend selected above is always honoured.
@@ -567,7 +578,7 @@ def main():
             else "🧪 Safe Demo Mode (Deterministic Mock LLM)"
         )
         st.info(
-            f"**Active Inference Engine**: {engine_label} — Queries execute read-only against `{target_env.upper()}` warehouse under `analytics_reader`."
+            f"**Active Inference Engine**: {engine_label} — Queries execute read-only against the `{target_env.upper()}` marts ({'embedded DuckDB' if cfg.is_duckdb else 'PostgreSQL analytics_reader'})."
         )
 
         # Suggested Prompt Buttons (First-time visitors)
@@ -602,24 +613,17 @@ def main():
             st.session_state.messages = []
             st.rerun()
 
-        # Render Previous Messages
-        for msg in st.session_state.messages:
-            role = msg["role"]
-            with st.chat_message(role):
-                if role == "user":
-                    st.markdown(msg["content"])
-                else:
-                    resp: AnalyticsQueryResponse = msg["response"]
-                    _render_assistant_response(resp)
+        # Conversation area: filled after input handling so each answer renders exactly once.
+        history_box = st.container()
 
-        # Clearly Visible In-Tab Input Form
-        st.markdown("#### Submit a Financial Question")
+        # Single question box (suggested-prompt buttons above feed the same pipeline)
+        st.markdown("#### Ask a Question")
         with st.form("copilot_query_form", clear_on_submit=True):
             form_col_input, form_col_btn = st.columns([5, 1])
             with form_col_input:
                 user_typed = st.text_input(
                     "Enter a financial inquiry:",
-                    placeholder="Type a commercial banking question (e.g., 'What was our net revenue?', 'Which customer segment pays the most fees?')...",
+                    placeholder="e.g. 'What was our net revenue?', 'How many customers do we have?', 'Which customers generated the most revenue?'",
                     key="copilot_form_text",
                     label_visibility="collapsed",
                 )
@@ -628,56 +632,53 @@ def main():
                     "Ask Copilot 🚀", type="primary", use_container_width=True
                 )
 
-        # Secondary Pinned Chat Input
-        floating_input = st.chat_input("Or enter an inquiry here...")
+        query_to_run = sample_prompt or (user_typed.strip() if form_submitted else "") or None
 
-        query_to_run = (
-            sample_prompt
-            or (user_typed if form_submitted and user_typed else None)
-            or floating_input
-        )
+        with history_box:
+            for idx, msg in enumerate(st.session_state.messages):
+                with st.chat_message(msg["role"]):
+                    if msg["role"] == "user":
+                        st.markdown(msg["content"])
+                    else:
+                        _render_assistant_response(msg["response"], key_prefix=f"hist_{idx}")
 
-        if query_to_run:
-            st.session_state.messages.append({"role": "user", "content": query_to_run})
-            with st.chat_message("user"):
-                st.markdown(query_to_run)
+            if query_to_run:
+                st.session_state.messages.append({"role": "user", "content": query_to_run})
+                with st.chat_message("user"):
+                    st.markdown(query_to_run)
 
-            with (
-                st.chat_message("assistant"),
-                st.spinner(
-                    "Analyzing question, validating SQL AST security boundaries, and querying warehouse..."
-                ),
-            ):
-                base_url, headers = get_backend_client()
-                resp = None
-                if base_url:
-                    try:
-                        with httpx.Client(timeout=30.0) as client:
-                            api_resp = client.post(
-                                f"{base_url}/api/v1/analytics/ask",
-                                json={"question": query_to_run, "environment": target_env},
-                                headers=headers,
+                with (
+                    st.chat_message("assistant"),
+                    st.spinner("Analyzing question, validating SQL, and querying the warehouse..."),
+                ):
+                    base_url, headers = get_backend_client()
+                    resp = None
+                    if base_url:
+                        try:
+                            with httpx.Client(timeout=30.0) as client:
+                                api_resp = client.post(
+                                    f"{base_url}/api/v1/analytics/ask",
+                                    json={"question": query_to_run, "environment": target_env},
+                                    headers=headers,
+                                )
+                                if api_resp.status_code == 200:
+                                    resp = AnalyticsQueryResponse.model_validate(api_resp.json())
+                        except Exception as exc:
+                            logger.warning(
+                                "AI query to API backend failed, falling back to local graph: %s",
+                                exc,
                             )
-                            if api_resp.status_code == 200:
-                                resp = AnalyticsQueryResponse.model_validate(api_resp.json())
-                    except Exception as exc:
-                        logger.warning(
-                            "AI query to API backend failed, falling back to local graph: %s", exc
+
+                    if resp is None:
+                        graph = get_graph()
+                        result = graph.invoke({"question": query_to_run, "environment": target_env})
+                        resp = result.get("final_response")
+
+                    if resp:
+                        st.session_state.messages.append({"role": "assistant", "response": resp})
+                        _render_assistant_response(
+                            resp, key_prefix=f"hist_{len(st.session_state.messages) - 1}"
                         )
-
-                if resp is None:
-                    graph = get_graph()
-                    result = graph.invoke(
-                        {
-                            "question": query_to_run,
-                            "environment": target_env,
-                        }
-                    )
-                    resp = result.get("final_response")
-
-                if resp:
-                    _render_assistant_response(resp)
-                    st.session_state.messages.append({"role": "assistant", "response": resp})
 
     # -------------------------------------------------------------
     # TAB 5: Governed Metric Catalog & Data Dictionary
@@ -730,7 +731,7 @@ def main():
                         display_dataframe(cols_df)
 
 
-def _render_assistant_response(resp: AnalyticsQueryResponse):
+def _render_assistant_response(resp: AnalyticsQueryResponse, key_prefix: str = "resp"):
     """Render executive financial narrative, evidence data table, and SQL audit drawer."""
     if resp.status == "OUT_OF_SCOPE":
         st.warning(f"**Inquiry Out of Scope**: {resp.answer}")
@@ -777,11 +778,16 @@ def _render_assistant_response(resp: AnalyticsQueryResponse):
                 data=csv_data,
                 file_name="query_results.csv",
                 mime="text/csv",
+                key=f"download_{key_prefix}",
             )
 
     # Governed SQL & Security Audit Drawer
     with st.expander("🔍 Governed SQL & Security Verification", expanded=False):
-        st.markdown("**Executed PostgreSQL Query (Read-Only `analytics_reader`):**")
+        st.markdown(
+            "**Executed SQL (read-only, "
+            + ("embedded DuckDB marts" if cfg.is_duckdb else "PostgreSQL `analytics_reader`")
+            + "):**"
+        )
         if resp.sql_query:
             st.code(resp.sql_query, language="sql")
         st.caption(

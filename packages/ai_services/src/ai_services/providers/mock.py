@@ -143,6 +143,22 @@ class DeterministicMockLLMProvider(BaseLLMProvider):
                     rejection_reason="Inquiry is outside the scope of commercial banking and financial analytics.",
                 )  # type: ignore[return-value]
 
+            # Questions the deterministic demo engine has no routing for must not silently fall
+            # through to the revenue default, which would answer a different question.
+            if not self._count_target(user_q) and not any(
+                term in user_q for term in self._SUPPORTED_TOPIC_TERMS
+            ):
+                return response_model(
+                    intent="UNSUPPORTED_BY_DEMO_ENGINE",
+                    is_out_of_scope=True,
+                    rejection_reason=(
+                        "The demo engine does not recognise this question. Try asking about "
+                        "revenue, fees, collections, arrears, reversals, customers, segments, "
+                        "or transaction volume — or how many customers, accounts or "
+                        "transactions there are."
+                    ),
+                )  # type: ignore[return-value]
+
             # Financial question decomposition
             intent = "FINANCIAL_METRIC_QUERY"
             period = None
@@ -159,6 +175,19 @@ class DeterministicMockLLMProvider(BaseLLMProvider):
             )  # type: ignore[return-value]
 
         if response_model == MetricResolution:
+            # 0. Entity counts (descriptive, not a governed financial metric)
+            count_target = self._count_target(user_q)
+            if count_target:
+                model, alias = count_target
+                entity = alias.replace("total_", "")
+                return response_model(
+                    metric_id=f"{entity}_count",
+                    metric_name=f"Number of {entity.capitalize()} (descriptive row count)",
+                    source_model=model,
+                    formula="COUNT(*)",
+                    confidence=0.9,
+                )  # type: ignore[return-value]
+
             # 1. Reversals
             if "revers" in user_q or "chargeback" in user_q or "cancell" in user_q:
                 return response_model(
@@ -254,8 +283,83 @@ class DeterministicMockLLMProvider(BaseLLMProvider):
         # Generic structured fallback
         return response_model.model_validate({})
 
+    # Dimension/fact row-count questions ("how many customers?"). These are descriptive counts of
+    # warehouse entities, not governed financial metrics, so they never touch monetary formulas.
+    _COUNT_TARGETS: tuple[tuple[tuple[str, ...], str, str], ...] = (
+        (("customer", "client"), "dim_customers", "total_customers"),
+        (("account",), "dim_accounts", "total_accounts"),
+        (("transaction",), "fct_transactions", "total_transactions"),
+    )
+    _COUNT_TRIGGERS = ("how many", "number of", "count of", "total number")
+    _SUPPORTED_TOPIC_TERMS = (
+        "revenue",
+        "income",
+        "fee",
+        "collect",
+        "realiz",
+        "waiv",
+        "arrear",
+        "outstanding",
+        "exception",
+        "past due",
+        "revers",
+        "chargeback",
+        "cancell",
+        "segment",
+        "profit",
+        "contribution",
+        "customer",
+        "client",
+        "volume",
+        "take rate",
+        "assess",
+        "contractual",
+        "transaction",
+        "account",
+        "financ",
+        "figure",
+        "overview",
+        "summary",
+        "kpi",
+        "performance",
+        "metric",
+        "total",
+        "bank",
+        "money",
+        "profit",
+        "earn",
+        "report",
+    )
+    _COUNT_EXCLUSIONS = (
+        "arrear",
+        "outstanding",
+        "exception",
+        "past due",
+        "revers",
+        "waiv",
+        "revenue",
+        "fee",
+    )
+
+    @classmethod
+    def _count_target(cls, user_q: str) -> tuple[str, str] | None:
+        """Return (source_model, count_alias) when the question asks for an entity count."""
+        if not any(t in user_q for t in cls._COUNT_TRIGGERS):
+            return None
+        if any(x in user_q for x in cls._COUNT_EXCLUSIONS):
+            return None
+        for keywords, model, alias in cls._COUNT_TARGETS:
+            if any(k in user_q for k in keywords):
+                return model, alias
+        return None
+
     def _generate_mock_sql(self, user_q: str) -> str:
         """Generate verified, syntax-clean SQL targeting approved analytics models."""
+        count_target = self._count_target(user_q)
+        if count_target:
+            model, alias = count_target
+            return f"SELECT COUNT(*) AS {alias} FROM analytics.{model} LIMIT 1000;"
+
         if "segment" in user_q or "profitab" in user_q:
             return (
                 "SELECT c.customer_segment, "
@@ -377,6 +481,19 @@ class DeterministicMockLLMProvider(BaseLLMProvider):
     def _generate_mock_answer(self, prompt: str, user_q: str) -> str:
         """Produce accurate financial answer dynamically derived from query result rows."""
         rows = self._extract_query_rows(prompt)
+
+        # 0. Entity counts (descriptive row counts)
+        count_target = self._count_target(user_q)
+        if count_target:
+            model, alias = count_target
+            entity = alias.replace("total_", "")
+            if rows and alias in rows[0]:
+                total = int(rows[0][alias])
+                return (
+                    f"There are **{total:,} {entity}** in the certified `analytics.{model}` mart. "
+                    "This is a descriptive row count of the warehouse entity, not a financial metric."
+                )
+            return f"No {entity} records were returned."
 
         # 1. Fee Collection Rate
         if "collection rate" in user_q or "collected fees" in user_q or "realiz" in user_q:

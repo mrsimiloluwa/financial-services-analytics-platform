@@ -200,8 +200,15 @@ class SQLGlotASTValidator:
                 )
             columns_accessed.append(col_name)
 
-        # 8. Row Limit Injection and Clamping
-        parsed = parsed.limit(self.max_limit)
+        # 8. Row Limit Injection and Clamping: never raise a smaller user LIMIT, only cap larger
+        # (or missing / non-literal) limits at max_limit.
+        effective_limit = self.max_limit
+        existing = parsed.args.get("limit")
+        if existing is not None:
+            expr = existing.args.get("expression")
+            if isinstance(expr, exp.Literal) and expr.is_int:
+                effective_limit = min(int(expr.this), self.max_limit)
+        parsed = parsed.limit(effective_limit)
         sanitized_sql = parsed.sql(dialect=self.dialect)
 
         return SQLValidationResult(
