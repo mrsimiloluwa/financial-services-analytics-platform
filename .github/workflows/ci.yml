@@ -131,8 +131,11 @@ jobs:
       - name: Grant analytics_reader permissions
         run: uv run python -m data_platform.security.provision_reader
 
-      - name: Run pytest test suite
-        run: uv run pytest tests/ -v
+      - name: Run unit test suite
+        run: uv run pytest tests/unit/ tests/airflow/ -v
+
+      - name: Run integration test suite
+        run: uv run pytest tests/integration/ -v --tb=short -ra
 
   docker-build:
     name: Docker Container Image Build
