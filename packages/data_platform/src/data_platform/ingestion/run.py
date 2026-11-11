@@ -47,6 +47,17 @@ def run_ingestion(
     else:
         active_settings = Settings()
 
+    if (
+        not active_settings.is_duckdb
+        and active_settings.postgres_db == active_settings.postgres_test_db
+    ):
+        from shared.db import ensure_test_database_exists
+
+        try:
+            ensure_test_database_exists(active_settings)
+        except Exception as exc:
+            print(f"[{datetime.now(UTC).isoformat()}] Note ensuring test database: {exc}")
+
     print(
         f"[{datetime.now(UTC).isoformat()}] Connecting to PostgreSQL: {active_settings.postgres_host}:{active_settings.postgres_port}/{active_settings.postgres_db}"
     )

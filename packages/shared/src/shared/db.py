@@ -144,9 +144,15 @@ def ensure_test_database_exists(settings: Settings | None = None) -> str:
         pass
 
     # Connect to the development/maintenance database to issue CREATE DATABASE
+    admin_conninfo = cfg.postgres_connection_string
+    if cfg.postgres_db == TEST_DATABASE_NAME:
+        admin_conninfo = cfg.postgres_connection_string.replace(
+            f"/{TEST_DATABASE_NAME}", "/postgres"
+        )
+
     with (
         psycopg.connect(
-            conninfo=cfg.postgres_connection_string,
+            conninfo=admin_conninfo,
             connect_timeout=cfg.db_timeout_seconds,
             autocommit=True,
         ) as admin_conn,
