@@ -47,6 +47,11 @@ def test_concurrent_api_requests(client: TestClient):
 
 def test_statement_timeout_kills_expensive_query():
     """Verify analytics_reader role kills queries exceeding statement timeout."""
+    from shared.config import get_settings
+
+    if get_settings().is_duckdb:
+        pytest.skip("Query cancellation test requires live PostgreSQL warehouse")
+
     import psycopg
     from shared.db import get_postgres_reader_connection
 

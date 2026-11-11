@@ -36,4 +36,17 @@ models:
         +materialized: table
 
 on-run-end:
-  - "DO $$ BEGIN IF EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolname = 'analytics_reader') THEN GRANT USAGE ON SCHEMA analytics TO analytics_reader; GRANT SELECT ON ALL TABLES IN SCHEMA analytics TO analytics_reader; END IF; END $$;"
+  - >
+    DO $$
+    BEGIN
+      IF EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolname = 'analytics_reader') THEN
+        GRANT USAGE ON SCHEMA analytics TO analytics_reader;
+        GRANT SELECT ON analytics.dim_accounts TO analytics_reader;
+        GRANT SELECT ON analytics.dim_customers TO analytics_reader;
+        GRANT SELECT ON analytics.fct_customer_revenue TO analytics_reader;
+        GRANT SELECT ON analytics.fct_fee_assessments TO analytics_reader;
+        GRANT SELECT ON analytics.fct_fee_collections TO analytics_reader;
+        GRANT SELECT ON analytics.fct_transactions TO analytics_reader;
+      END IF;
+    END
+    $$;

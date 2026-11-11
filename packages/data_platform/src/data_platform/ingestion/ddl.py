@@ -33,13 +33,15 @@ def load_sql_file(filename: str) -> str:
 
 
 def init_database_schemas(conn: psycopg.Connection) -> None:
-    """Initialize raw and staging schemas in PostgreSQL using governed SQL scripts."""
+    """Initialize raw, staging, and metadata schemas in PostgreSQL using governed SQL scripts."""
     raw_ddl = load_sql_file("schema_raw.sql")
     staging_ddl = load_sql_file("schema_staging.sql")
+    metadata_ddl = load_sql_file("schema_metadata.sql")
 
     with conn.cursor() as cur:
         cur.execute(raw_ddl)
         cur.execute(staging_ddl)
+        cur.execute(metadata_ddl)
     conn.commit()
 
 

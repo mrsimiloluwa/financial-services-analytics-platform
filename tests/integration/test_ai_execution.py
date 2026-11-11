@@ -6,7 +6,14 @@ import psycopg
 import pytest
 from ai_services.execution.engine import SQLExecutionEngine
 from data_platform.security.provision_reader import APPROVED_QUERYABLE_MARTS
+from shared.config import get_settings
 from shared.db import get_postgres_reader_connection
+
+
+@pytest.fixture(autouse=True)
+def require_live_postgres():
+    if get_settings().is_duckdb:
+        pytest.skip("PostgreSQL role permission tests require live PostgreSQL warehouse")
 
 
 @pytest.fixture

@@ -14,6 +14,11 @@ from shared.db import get_test_postgres_connection
 
 def test_metadata_repository_persistence_and_queries() -> None:
     """Verify transactional persistence and query methods of MetadataRepository."""
+    from shared.config import get_settings
+
+    if get_settings().is_duckdb:
+        pytest.skip("Metadata repository persistence tests require live PostgreSQL warehouse")
+
     target_dir = Path("packages/data_platform/dbt_analytics/target")
     if not (target_dir / "manifest.json").exists():
         pytest.skip("dbt compilation target artifacts not found.")
@@ -59,6 +64,11 @@ def test_metadata_repository_persistence_and_queries() -> None:
 
 def test_failed_metadata_run_does_not_demote_latest() -> None:
     """Verify that persisting a failed run (is_latest=False) preserves the active latest catalog."""
+    from shared.config import get_settings
+
+    if get_settings().is_duckdb:
+        pytest.skip("Metadata repository persistence tests require live PostgreSQL warehouse")
+
     target_dir = Path("packages/data_platform/dbt_analytics/target")
     if not (target_dir / "manifest.json").exists():
         pytest.skip("dbt target artifacts not found.")
